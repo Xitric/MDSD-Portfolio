@@ -1,0 +1,9 @@
+grammar org.iot.devicefactory.DeviceLibrary with org.iot.devicefactory.Common
+
+generate deviceLibrary "http://www.iot.org/devicefactory/DeviceLibrary"
+
+Model:
+	greetings+=Greeting*;
+	
+Greeting:
+	'Hello' 'you' cont=SomethingCommon;

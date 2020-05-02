@@ -1,0 +1,36 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: org.iot.devicefactory
+Bundle-ManifestVersion: 2
+Bundle-Name: org.iot.devicefactory
+Bundle-Vendor: My Company
+Bundle-Version: 1.0.0.qualifier
+Bundle-SymbolicName: org.iot.devicefactory; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.xtext,
+ org.eclipse.xtext.xbase,
+ org.eclipse.equinox.common;bundle-version="3.5.0",
+ org.eclipse.emf.ecore,
+ org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
+ org.eclipse.xtext.util,
+ org.eclipse.emf.common,
+ org.eclipse.xtend.lib;bundle-version="2.14.0",
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: org.iot.devicefactory.common.util,
+ org.iot.devicefactory.parser.antlr.internal,
+ org.iot.devicefactory.parser.antlr,
+ org.iot.devicefactory.deviceFactory.impl,
+ org.iot.devicefactory.deviceFactory.util,
+ org.iot.devicefactory.common.impl,
+ org.iot.devicefactory.validation,
+ org.iot.devicefactory.deviceLibrary.impl,
+ org.iot.devicefactory.services,
+ org.iot.devicefactory,
+ org.iot.devicefactory.generator,
+ org.iot.devicefactory.common,
+ org.iot.devicefactory.deviceFactory,
+ org.iot.devicefactory.serializer,
+ org.iot.devicefactory.scoping,
+ org.iot.devicefactory.deviceLibrary,
+ org.iot.devicefactory.deviceLibrary.util
+Import-Package: org.apache.log4j

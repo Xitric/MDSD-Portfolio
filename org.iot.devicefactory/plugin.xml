@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+	<extension point="org.eclipse.emf.ecore.generated_package">
+		<package 
+			uri = "http://www.iot.org/devicefactory/Common"
+			class = "org.iot.devicefactory.common.CommonPackage"
+			genModel = "model/generated/Common.genmodel" />
+	</extension>
+	<extension point="org.eclipse.emf.ecore.generated_package">
+		<package 
+			uri = "http://www.iot.org/devicefactory/DeviceFactory"
+			class = "org.iot.devicefactory.deviceFactory.DeviceFactoryPackage"
+			genModel = "model/generated/DeviceFactory.genmodel" />
+	</extension>
+	<extension point="org.eclipse.emf.ecore.generated_package">
+		<package 
+			uri = "http://www.iot.org/devicefactory/DeviceLibrary"
+			class = "org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage"
+			genModel = "model/generated/DeviceLibrary.genmodel" />
+	</extension>
+</plugin>
