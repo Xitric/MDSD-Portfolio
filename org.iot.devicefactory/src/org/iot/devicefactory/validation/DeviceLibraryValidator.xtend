@@ -3,6 +3,10 @@
  */
 package org.iot.devicefactory.validation
 
+import java.util.HashSet
+import org.eclipse.xtext.validation.Check
+import org.iot.devicefactory.deviceLibrary.Board
+import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
 
 /**
  * This class contains custom validation rules. 
@@ -11,15 +15,20 @@ package org.iot.devicefactory.validation
  */
 class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 	
-//	public static val INVALID_NAME = 'invalidName'
-//
-//	@Check
-//	def checkGreetingStartsWithCapital(Greeting greeting) {
-//		if (!Character.isUpperCase(greeting.name.charAt(0))) {
-//			warning('Name should start with a capital', 
-//					DeviceLibraryPackage.Literals.GREETING__NAME,
-//					INVALID_NAME)
-//		}
-//	}
+	public static val INHERITANCE_CYCLE = "org.iot.devicefactory.deviceLibrary.INHERITANCE_CYCLE"
 	
+	@Check
+	def validateNoInheritanceCycles(Board board) {
+		val known = new HashSet<Board>()
+		var current = board
+		while (current !== null) {
+			if (known.contains(current)) {
+				error("Inheritance cycles are not allowed", Literals.BOARD__PARENT, INHERITANCE_CYCLE)
+				return
+			}
+			
+			known.add(current)
+			current = current.parent
+		}
+	}
 }

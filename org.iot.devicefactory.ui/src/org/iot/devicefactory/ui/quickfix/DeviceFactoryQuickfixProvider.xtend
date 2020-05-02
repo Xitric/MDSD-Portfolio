@@ -3,6 +3,10 @@
  */
 package org.iot.devicefactory.ui.quickfix
 
+import org.eclipse.xtext.ui.editor.quickfix.Fix
+import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionAcceptor
+import org.eclipse.xtext.validation.Issue
+import org.iot.devicefactory.validation.DeviceFactoryValidator
 
 /**
  * Custom quickfixes.
@@ -11,13 +15,20 @@ package org.iot.devicefactory.ui.quickfix
  */
 class DeviceFactoryQuickfixProvider extends CommonQuickfixProvider {
 
-//	@Fix(DeviceFactoryValidator.INVALID_NAME)
-//	def capitalizeName(Issue issue, IssueResolutionAcceptor acceptor) {
-//		acceptor.accept(issue, 'Capitalize name', 'Capitalize the name.', 'upcase.png') [
-//			context |
-//			val xtextDocument = context.xtextDocument
-//			val firstLetter = xtextDocument.get(issue.offset, 1)
-//			xtextDocument.replace(issue.offset, 1, firstLetter.toUpperCase)
-//		]
-//	}
+	@Fix(DeviceFactoryValidator.INHERITANCE_CYCLE)
+	def removeInheritance(Issue issue, IssueResolutionAcceptor acceptor) {
+		acceptor.accept(issue, 'Convert to base device', 'Remove the inheritance and convert to a base device', null) [
+			context |
+			val document = context.xtextDocument
+			var beginOffset = 0
+			var String issueText
+			
+			do {
+				beginOffset++
+				issueText = document.get(issue.offset - beginOffset, issue.length + beginOffset)
+			} while(!issueText.startsWith("includes"))
+			
+			document.replace(issue.offset - beginOffset, issue.length + beginOffset, "board ")
+		]
+	}
 }
