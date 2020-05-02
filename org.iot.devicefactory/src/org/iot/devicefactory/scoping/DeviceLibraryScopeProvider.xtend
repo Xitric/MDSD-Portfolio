@@ -3,6 +3,17 @@
  */
 package org.iot.devicefactory.scoping
 
+import java.util.HashSet
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.EReference
+import org.eclipse.xtext.scoping.IScope
+import org.eclipse.xtext.scoping.Scopes
+import org.iot.devicefactory.deviceLibrary.Board
+import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
+import org.iot.devicefactory.deviceLibrary.Library
+import org.iot.devicefactory.deviceLibrary.Sensor
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
 
 /**
  * This class contains custom scoping description.
@@ -11,5 +22,32 @@ package org.iot.devicefactory.scoping
  * on how and when to use it.
  */
 class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
-
+	
+	override getScope(EObject context, EReference reference) {
+		switch (reference) {
+			case Literals.OVERRIDE_SENSOR__NAME:
+				context.sensorNameScope
+			case Literals.BOARD__PARENT:
+				context.boardParentScope
+			default:
+				super.getScope(context, reference)
+		}
+	}
+	
+	def private IScope getSensorNameScope(EObject context) {
+		var current = context.getContainerOfType(Board)?.parent
+		val sensors = new HashSet<Sensor>()
+		
+		while (current !== null) {
+			sensors.addAll(current.sensors)
+			current = current.parent
+		}
+		
+		Scopes.scopeFor(sensors)
+	}
+	
+	def private IScope getBoardParentScope(EObject context) {
+		val library = context.getContainerOfType(Library)
+		Scopes.scopeFor(library.boards.filter[it !== context])
+	}
 }

@@ -13,17 +13,19 @@ Board:
 ;
 
 Sensor:
-	(BaseSensor | OverrideSensor) (BEGIN
+	BaseSensor | OverrideSensor
+;
+
+BaseSensor:
+	'sensor' name=ID input=SensorInput (BEGIN
 		preprocess = Preprocess
 	END)?
 ;
 
-BaseSensor:
-	'sensor' name=ID input=SensorInput
-;
-
 OverrideSensor:
-	'override' 'sensor' name=[Sensor]
+	'override' 'sensor' name=[Sensor] BEGIN
+		preprocess = Preprocess
+	END
 ;
 
 SensorInput:
