@@ -1,9 +1,106 @@
 grammar org.iot.devicefactory.DeviceFactory with org.iot.devicefactory.Common
 
+import "http://www.iot.org/devicefactory/DeviceLibrary" as Library
+
 generate deviceFactory "http://www.iot.org/devicefactory/DeviceFactory"
 
-Model:
-	greetings+=Greeting*;
+Deployment:
+	// There should be at least one library - otherwise we cannot define any
+	// devices
+	libraries+=Library+
+	language=Language
 	
-Greeting:
-	'Hello' content=SomethingCommon;
+	// We want to be able to specify these things in any order
+	// We then use a validator to ensure that the correct number of each has
+	// been specified. This would have been difficult to express in the grammar
+	// itself
+	(channels+=Channel | devices+=Device | fog+=Fog | cloud+=Cloud)*
+;
+
+Library:
+	'library' name=ID
+;
+
+Language:
+	'language' name=ID
+;
+
+Channel:
+	'channel' name=ID
+;
+
+Device:
+	(BaseDevice | ChildDevice) BEGIN
+		('in' input=[Channel])?
+		sensors+=Sensor+
+	END
+;
+
+BaseDevice:
+	'device' name=ID 'board' board=[Library::Board]
+;
+
+ChildDevice:
+	'device' name=ID 'includes' parent=[Device]
+;
+
+Sensor:
+	(BaseSensor | OverrideSensor) BEGIN
+		datas+=SensorData+
+	END
+;
+
+BaseSensor:
+	'sensor' name=[Library::Sensor] sampler=Sampler
+;
+
+OverrideSensor:
+	'override' 'sensor' name=[Sensor] (sampler=Sampler)?
+;
+
+SensorData:
+	'data' name=ID BEGIN
+		outputs += SensorDataOut+
+	END
+;
+
+SensorDataOut:
+	'out' channel=[Channel] pipeline=Pipeline?
+;
+
+Sampler:
+	'sample' ({FrequencySampler} 'frequency' delay=INT | {SignalSampler} 'signal')
+;
+
+Fog:
+	'fog' BEGIN
+		transformations+=Transformation+ 
+	END
+;
+
+Cloud:
+	'cloud' BEGIN
+		transformations+=Transformation+ 
+	END
+;
+
+Transformation:
+	'transformation' provider=[Data] 'as' variables=VariableDeclaration BEGIN
+		datas+=TransformationData+
+	END
+;
+
+TransformationData:
+	'data' name=ID BEGIN
+		outputs += TransformationOut+ 	
+	END
+;
+
+// A transformation would not make much sense without a pipeline
+TransformationOut: 
+	'out' pipeline=Pipeline
+;
+
+Data:
+	SensorData | TransformationData
+;

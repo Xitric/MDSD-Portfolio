@@ -2,8 +2,42 @@ grammar org.iot.devicefactory.DeviceLibrary with org.iot.devicefactory.Common
 
 generate deviceLibrary "http://www.iot.org/devicefactory/DeviceLibrary"
 
-Model:
-	greetings+=Greeting*;
-	
-Greeting:
-	'Hello' 'you' cont=SomethingCommon;
+Library:
+	boards += Board*
+;
+
+Board:
+	'define' 'board' name=ID ('includes' parent=[Board])? BEGIN
+		sensors += Sensor+
+	END
+;
+
+Sensor:
+	(BaseSensor | OverrideSensor) (BEGIN
+		preprocess = Preprocess
+	END)?
+;
+
+BaseSensor:
+	'sensor' name=ID input=SensorInput
+;
+
+OverrideSensor:
+	'override' 'sensor' name=[Sensor]
+;
+
+SensorInput:
+	I2C | Pin
+;
+
+Pin:
+	'pin' '(' pins+=INTEGER (',' pins+=INTEGER)* ')' 'as' variables=VariableDeclaration
+;
+
+I2C:
+	'i2c' '(' address=INTEGER ')' 'as' variables=VariableDeclaration
+;
+
+Preprocess:
+	'preprocess' pipeline=Pipeline
+;

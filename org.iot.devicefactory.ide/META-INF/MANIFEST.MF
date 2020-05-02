@@ -12,4 +12,5 @@ Require-Bundle: org.iot.devicefactory,
  org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: org.iot.devicefactory.ide.contentassist.antlr.internal,
- org.iot.devicefactory.ide.contentassist.antlr
+ org.iot.devicefactory.ide.contentassist.antlr,
+ org.iot.devicefactory.ide.contentassist.antlr.lexer

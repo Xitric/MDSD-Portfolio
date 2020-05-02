@@ -43,6 +43,35 @@ Workflow {
 			generator = {
 				generateXtendStub = true
 			}
+			// Required to distinguish tuples and parenthesized expressions
+			// from one another
+			parserGenerator = {
+				options = {
+					backtrack = true
+				}
+			}
+			junitSupport = {
+				junitVersion = "5"
+			}
+		}
+		language = StandardLanguage {
+			name = "org.iot.devicefactory.DeviceLibrary"
+			fileExtensions = "iotc"
+
+			serializer = {
+				generateStub = false
+			}
+			validator = {
+				generateDeprecationValidation = true
+			}
+			generator = {
+				generateXtendStub = true
+			}
+			parserGenerator = {
+				options = {
+					backtrack = true
+				}
+			}
 			junitSupport = {
 				junitVersion = "5"
 			}
@@ -50,7 +79,8 @@ Workflow {
 		language = StandardLanguage {
 			name = "org.iot.devicefactory.DeviceFactory"
 			fileExtensions = "iot"
-			referencedResource = "platform:/resource/org.iot.devicefactory/src/org/iot/devicefactory/Common.xtext"
+			// So that we can refer to names defined in .iotc files
+			referencedResource = "platform:/resource/org.iot.devicefactory/src/org/iot/devicefactory/DeviceLibrary.xtext"
 			
 			serializer = {
 				generateStub = false
@@ -61,23 +91,10 @@ Workflow {
 			generator = {
 				generateXtendStub = true
 			}
-			junitSupport = {
-				junitVersion = "5"
-			}
-		}
-		language = StandardLanguage {
-			name = "org.iot.devicefactory.DeviceLibrary"
-			fileExtensions = "iotc"
-			referencedResource = "platform:/resource/org.iot.devicefactory/src/org/iot/devicefactory/Common.xtext"
-
-			serializer = {
-				generateStub = false
-			}
-			validator = {
-				generateDeprecationValidation = true
-			}
-			generator = {
-				generateXtendStub = true
+			parserGenerator = {
+				options = {
+					backtrack = true
+				}
 			}
 			junitSupport = {
 				junitVersion = "5"
