@@ -13,10 +13,11 @@ Filter:
 ;
 
 Map:
-	'map' '[' expression=(Expression | Tuple) '=>' output=VariableDeclaration ']'
+	'map' '[' expression=Expression '=>' output=VariableDeclaration ']'
 ;
 
 Window:
+	
 	'window' '[' width=INT ']' '.' execute=ExecutePipeline
 ;
 
@@ -29,11 +30,6 @@ ExecutePipeline:
     {StDev} 'stdev' |
     {Min} 'min' |
     {Max} 'max'
-;
-
-// Requires at least one comma
-Tuple:
-	'(' values+=Expression (',' values+=Expression)+ ')'
 ;
 
 // The expression rules are loose allowing for meaningless expressions to be
@@ -87,11 +83,17 @@ Not returns Expression:
 ;
 
 Primary returns Expression:
-	Parentheses | NumberLiteral | BooleanLiteral | Reference | StringLiteral
+	Parentheses | Tuple | NumberLiteral | BooleanLiteral | Reference | StringLiteral
 ;
 
 Parentheses:
 	'(' exp = Expression ')'
+;
+
+// Requires at least one comma. Also requires backtracking to distinguish from
+// the parenthesis rule
+Tuple:
+	'(' values+=Expression (',' values+=Expression)+ ')'
 ;
 
 Reference:
@@ -108,7 +110,7 @@ Variable:
 
 // Requires at least one comma
 Variables:
-	'(' vars+=ID (',' vars+=ID)+ ')'
+	'(' vars+=Variable (',' vars+=Variable)+ ')'
 ;
 
 StringLiteral:

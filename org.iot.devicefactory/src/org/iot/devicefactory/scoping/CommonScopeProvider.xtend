@@ -3,6 +3,16 @@
  */
 package org.iot.devicefactory.scoping
 
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.EReference
+import org.eclipse.xtext.scoping.IScope
+import org.eclipse.xtext.scoping.Scopes
+import org.iot.devicefactory.common.CommonPackage.Literals
+import org.iot.devicefactory.common.Map
+import org.iot.devicefactory.common.Pipeline
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension org.iot.devicefactory.scoping.CommonScopingUtils.*
 
 /**
  * This class contains custom scoping description.
@@ -11,5 +21,18 @@ package org.iot.devicefactory.scoping
  * on how and when to use it.
  */
 class CommonScopeProvider extends AbstractCommonScopeProvider {
-
+	
+	override getScope(EObject context, EReference reference) {
+		switch reference {
+			case Literals.REFERENCE__VARIABLE:
+				context.referenceVariableScope
+			default:
+				super.getScope(context, reference)
+		}
+	}
+	
+	def private IScope getReferenceVariableScope(EObject context) {
+		val map = context.getContainerOfType(Pipeline)?.eContainer()?.getContainerOfType(Map)
+		map === null ? IScope.NULLSCOPE : Scopes.scopeFor(map.output.variables)
+	}
 }

@@ -3,6 +3,8 @@
  */
 package org.iot.devicefactory.scoping
 
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.EReference
 
 /**
  * This class contains custom scoping description.
@@ -11,5 +13,11 @@ package org.iot.devicefactory.scoping
  * on how and when to use it.
  */
 class DeviceFactoryScopeProvider extends AbstractDeviceFactoryScopeProvider {
-
+	
+	override getScope(EObject context, EReference reference) {
+		switch reference {
+			default:
+				super.getScope(context, reference)
+		}
+	}
 }

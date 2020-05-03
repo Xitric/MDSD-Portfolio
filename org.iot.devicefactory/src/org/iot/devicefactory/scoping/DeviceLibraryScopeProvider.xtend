@@ -3,17 +3,22 @@
  */
 package org.iot.devicefactory.scoping
 
+import com.google.inject.Inject
 import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
+import org.iot.devicefactory.common.CommonPackage
+import org.iot.devicefactory.deviceLibrary.BaseSensor
 import org.iot.devicefactory.deviceLibrary.Board
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
 import org.iot.devicefactory.deviceLibrary.Library
+import org.iot.devicefactory.deviceLibrary.OverrideSensor
 import org.iot.devicefactory.deviceLibrary.Sensor
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension org.iot.devicefactory.scoping.CommonScopingUtils.*
 
 /**
  * This class contains custom scoping description.
@@ -23,12 +28,16 @@ import static extension org.eclipse.xtext.EcoreUtil2.*
  */
 class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
 	
+	@Inject CommonScopeProvider commonScopeProvider
+	
 	override getScope(EObject context, EReference reference) {
-		switch (reference) {
-			case Literals.OVERRIDE_SENSOR__NAME:
+		switch reference {
+			case Literals.OVERRIDE_SENSOR__PARENT:
 				context.sensorNameScope
 			case Literals.BOARD__PARENT:
 				context.boardParentScope
+			case CommonPackage.Literals.REFERENCE__VARIABLE:
+				context.referenceVariableScope
 			default:
 				super.getScope(context, reference)
 		}
@@ -49,5 +58,53 @@ class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
 	def private IScope getBoardParentScope(EObject context) {
 		val library = context.getContainerOfType(Library)
 		Scopes.scopeFor(library.boards.filter[it !== context])
+	}
+	
+	def private IScope getReferenceVariableScope(EObject context) {
+		val commonScope = commonScopeProvider.getScope(context, CommonPackage.Literals.REFERENCE__VARIABLE)
+		commonScope === IScope.NULLSCOPE ? context.referenceVariableScopeInherited : commonScope
+	}
+	
+	def private IScope getReferenceVariableScopeInherited(EObject context) {
+		val sensor = context.getContainerOfType(Sensor)
+		switch sensor {
+			BaseSensor: {
+				val varDecl = sensor.input?.variables
+				return varDecl === null ? IScope.NULLSCOPE : Scopes.scopeFor(varDecl.variables)
+			}
+			OverrideSensor: {
+				val parentSensor = sensor.parentSensor
+				val parentPreprocess = parentSensor?.preprocess
+				if (parentPreprocess !== null) {
+					val parentOutVariables = parentPreprocess.pipeline.variables
+					if (! parentOutVariables.empty) {
+						return Scopes.scopeFor(parentOutVariables)
+					}
+				}
+				
+				return parentSensor.referenceVariableScope
+			}
+		}
+		
+		return IScope.NULLSCOPE
+	}
+	
+	def private getParentSensor(OverrideSensor child) {
+		var boardParent = child.getContainerOfType(Board).parent
+		
+		while (boardParent !== null) {
+			val parentSensor = boardParent.sensors.findFirst[asBaseSensor === child.asBaseSensor]
+			if (parentSensor !== null) {
+				return parentSensor
+			}
+			boardParent = boardParent.parent
+		}
+	}
+	
+	def private BaseSensor asBaseSensor(Sensor sensor) {
+		switch sensor {
+			BaseSensor: sensor
+			OverrideSensor: sensor.parent.asBaseSensor
+		}
 	}
 }
