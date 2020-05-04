@@ -3,23 +3,174 @@
  */
 package org.iot.devicefactory.validation
 
+import com.google.inject.Inject
+import org.eclipse.emf.ecore.EStructuralFeature
+import org.eclipse.xtext.validation.Check
+import org.iot.devicefactory.common.Add
+import org.iot.devicefactory.common.And
+import org.iot.devicefactory.common.CommonPackage.Literals
+import org.iot.devicefactory.common.Conditional
+import org.iot.devicefactory.common.Div
+import org.iot.devicefactory.common.Equal
+import org.iot.devicefactory.common.Exponent
+import org.iot.devicefactory.common.Expression
+import org.iot.devicefactory.common.GreaterThan
+import org.iot.devicefactory.common.GreaterThanEqual
+import org.iot.devicefactory.common.LessThan
+import org.iot.devicefactory.common.LessThanEqual
+import org.iot.devicefactory.common.Mul
+import org.iot.devicefactory.common.Negation
+import org.iot.devicefactory.common.Not
+import org.iot.devicefactory.common.Or
+import org.iot.devicefactory.common.Sub
+import org.iot.devicefactory.common.Tuple
+import org.iot.devicefactory.common.Unequal
+import org.iot.devicefactory.typing.ExpressionType
+import org.iot.devicefactory.typing.ExpressionTypeChecker
+import org.iot.devicefactory.typing.TupleExpressionType
 
 /**
  * This class contains custom validation rules. 
- *
+ * 
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 class CommonValidator extends AbstractCommonValidator {
+
+	@Inject extension ExpressionTypeChecker
+
+	def validateType(Expression exp, ExpressionType expected, EStructuralFeature feature) {
+		val actual = exp.typeOf
+		if (actual != expected) {
+			error('''Expected «expected», got «actual»''', feature)
+		}
+	}
 	
-//	public static val INVALID_NAME = 'invalidName'
-//
-//	@Check
-//	def checkGreetingStartsWithCapital(Greeting greeting) {
-//		if (!Character.isUpperCase(greeting.name.charAt(0))) {
-//			warning('Name should start with a capital', 
-//					CommonPackage.Literals.GREETING__NAME,
-//					INVALID_NAME)
-//		}
-//	}
-	
+	def validateNumber(Expression exp, EStructuralFeature feature) {
+		val actual = exp.typeOf
+		if (!actual.isNumberType) {
+			error('''Expected integer or double, got «actual»''', feature)
+		}
+	}
+
+	@Check
+	def validateExpression(Conditional exp) {
+		if (exp.condition === null || exp.first === null || exp.second === null) {
+			return
+		}
+
+		exp.condition.validateType(ExpressionType.BOOLEAN, Literals.CONDITIONAL__CONDITION)
+
+		val expected = exp.typeOf
+		exp.first.validateType(expected, Literals.CONDITIONAL__FIRST)
+		exp.second.validateType(expected, Literals.CONDITIONAL__SECOND)
+	}
+
+	@Check
+	def validateExpression(Or exp) {
+		exp.left.validateType(ExpressionType.BOOLEAN, Literals.OR__LEFT)
+		exp.right.validateType(ExpressionType.BOOLEAN, Literals.OR__RIGHT)
+	}
+
+	@Check
+	def validateExpression(And exp) {
+		exp.left.validateType(ExpressionType.BOOLEAN, Literals.AND__LEFT)
+		exp.right.validateType(ExpressionType.BOOLEAN, Literals.AND__RIGHT)
+	}
+
+	@Check
+	def validateExpression(Equal exp) {
+		if (!exp.left.typeOf.isNumberType || !exp.right.typeOf.isNumberType) {
+			val expected = evaluateTypes(exp.left.typeOf, exp.right.typeOf)
+			
+			exp.left.validateType(expected, Literals.EQUAL__LEFT)
+			exp.right.validateType(expected, Literals.EQUAL__RIGHT)
+		}
+	}
+
+	@Check
+	def validateExpression(Unequal exp) {
+		if (!exp.left.typeOf.isNumberType || !exp.right.typeOf.isNumberType) {
+			val expected = evaluateTypes(exp.left.typeOf, exp.right.typeOf)
+			
+			exp.left.validateType(expected, Literals.UNEQUAL__LEFT)
+			exp.right.validateType(expected, Literals.UNEQUAL__RIGHT)
+		}
+	}
+
+	@Check
+	def validateExpression(LessThan exp) {
+		exp.left.validateNumber(Literals.LESS_THAN__LEFT)
+		exp.right.validateNumber(Literals.LESS_THAN__RIGHT)
+	}
+
+	@Check
+	def validateExpression(LessThanEqual exp) {
+		exp.left.validateNumber(Literals.LESS_THAN_EQUAL__LEFT)
+		exp.right.validateNumber(Literals.LESS_THAN_EQUAL__RIGHT)
+	}
+
+	@Check
+	def validateExpression(GreaterThan exp) {
+		exp.left.validateNumber(Literals.GREATER_THAN__LEFT)
+		exp.right.validateNumber(Literals.GREATER_THAN__RIGHT)
+	}
+
+	@Check
+	def validateExpression(GreaterThanEqual exp) {
+		exp.left.validateNumber(Literals.GREATER_THAN_EQUAL__LEFT)
+		exp.right.validateNumber(Literals.GREATER_THAN_EQUAL__RIGHT)
+	}
+
+	@Check
+	def validateExpression(Add exp) {
+		if (exp.left.typeOf != ExpressionType.STRING && exp.right.typeOf != ExpressionType.STRING) {
+			exp.left.validateNumber(Literals.ADD__LEFT)
+			exp.right.validateNumber(Literals.ADD__RIGHT)
+		}
+	}
+
+	@Check
+	def validateExpression(Sub exp) {
+		exp.left.validateNumber(Literals.SUB__LEFT)
+		exp.right.validateNumber(Literals.SUB__RIGHT)
+	}
+
+	@Check
+	def validateExpression(Mul exp) {
+		exp.left.validateNumber(Literals.MUL__LEFT)
+		exp.right.validateNumber(Literals.MUL__RIGHT)
+	}
+
+	@Check
+	def validateExpression(Div exp) {
+		exp.left.validateNumber(Literals.DIV__LEFT)
+		exp.right.validateNumber(Literals.DIV__RIGHT)
+	}
+
+	@Check
+	def validateExpression(Negation exp) {
+		exp.value.validateNumber(Literals.NEGATION__VALUE)
+	}
+
+	@Check
+	def validateExpression(Exponent exp) {
+		exp.base.validateNumber(Literals.EXPONENT__BASE)
+		exp.power.validateNumber(Literals.EXPONENT__POWER)
+	}
+
+	@Check
+	def validateExpression(Not exp) {
+		exp.value.validateType(ExpressionType.BOOLEAN, Literals.NEGATION__VALUE)
+	}
+
+	@Check
+	def validateExpression(Tuple exp) {
+		val actual = exp.typeOf as TupleExpressionType
+		for (ExpressionType type: actual.elements) {
+			if (type instanceof TupleExpressionType) {
+				error('''Tuples are only allowed at the top-level. This tuple contains a nested tuple: «type»''', Literals.TUPLE__VALUES)
+				return
+			}
+		}
+	}
 }

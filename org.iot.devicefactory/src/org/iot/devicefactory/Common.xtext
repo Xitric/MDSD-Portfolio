@@ -39,7 +39,7 @@ Expression:
 ;
 
 Conditional returns Expression:
-	Or ({Conditional.condition=current} '?' correct=Conditional ':' incorrect=Conditional)?
+	Or ({Conditional.condition=current} '?' first=Conditional ':' second=Conditional)?
 ;
 
 // Implemented in a right-associative way just as an example - associativity
@@ -61,7 +61,7 @@ Comparison returns Expression:
 ;
 
 SubAdd returns Expression:
-	MulDiv ({Plus.left=current} '+' right=MulDiv | {Minus.left=current} '-' right=MulDiv)*
+	MulDiv ({Add.left=current} '+' right=MulDiv | {Sub.left=current} '-' right=MulDiv)*
 ;
 
 MulDiv returns Expression:
@@ -87,7 +87,7 @@ Primary returns Expression:
 ;
 
 Parentheses:
-	'(' exp = Expression ')'
+	'(' expression = Expression ')'
 ;
 
 // Requires at least one comma. Also requires backtracking to distinguish from
