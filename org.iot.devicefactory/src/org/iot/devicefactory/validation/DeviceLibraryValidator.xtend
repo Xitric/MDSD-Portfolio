@@ -5,8 +5,14 @@ package org.iot.devicefactory.validation
 
 import java.util.HashSet
 import org.eclipse.xtext.validation.Check
+import org.iot.devicefactory.deviceLibrary.BaseSensor
 import org.iot.devicefactory.deviceLibrary.Board
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
+import org.iot.devicefactory.deviceLibrary.OverrideSensor
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension org.iot.devicefactory.util.LibraryUtils.*
+import org.iot.devicefactory.deviceLibrary.Sensor
 
 /**
  * This class contains custom validation rules. 
@@ -16,6 +22,8 @@ import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
 class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 	
 	public static val INHERITANCE_CYCLE = "org.iot.devicefactory.deviceLibrary.INHERITANCE_CYCLE"
+	public static val DUPLICATE_SENSOR = "org.iot.devicefactory.deviceLibrary.DUPLICATE_SENSOR"
+	public static val NON_OVERRIDING_SENSOR = "org.iot.devicefactory.deviceLibrary.NON_OVERRIDING_SENSOR"
 	
 	@Check
 	def validateNoInheritanceCycles(Board board) {
@@ -29,6 +37,39 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 			
 			known.add(current)
 			current = current.parent
+		}
+	}
+	
+	@Check
+	def validateNoDuplicateBaseSensors(BaseSensor sensor) {
+		val board = sensor.getContainerOfType(Board)
+		if (board.sensors.takeWhile[it !== sensor].exists[it.asBaseSensor.name == sensor.name]) {
+			error('''Duplicate sensor definition «sensor.name» in same board''', Literals.BASE_SENSOR__NAME, DUPLICATE_SENSOR)
+		}
+	}
+	
+	@Check
+	def validateNoDuplicateOverrideSensors(OverrideSensor sensor) {
+		val board = sensor.getContainerOfType(Board)
+		if (board.sensors.takeWhile[it !== sensor].exists[it.asBaseSensor.name == sensor.asBaseSensor.name]) {
+			error('''Duplicate sensor definition «sensor.asBaseSensor.name» in same board''', Literals.OVERRIDE_SENSOR__PARENT, DUPLICATE_SENSOR)
+		}
+	}
+	
+	@Check
+	def validateChildSensorsOverride(BaseSensor sensor) {
+		var parent = sensor.getContainerOfType(Board).parent
+		
+		while (parent !== null) {
+			for (Sensor parentSensor: parent.sensors) {
+				if (parentSensor.asBaseSensor.name == sensor.name) {
+					error('''Redeclared sensor «sensor.name» must override inherited definition from «parent.name»''',
+						Literals.BASE_SENSOR__NAME, NON_OVERRIDING_SENSOR
+					)
+					return
+				}
+			}
+			parent = parent.parent
 		}
 	}
 }

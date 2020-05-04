@@ -18,7 +18,8 @@ import org.iot.devicefactory.deviceLibrary.OverrideSensor
 import org.iot.devicefactory.deviceLibrary.Sensor
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import static extension org.iot.devicefactory.scoping.CommonScopingUtils.*
+import static extension org.iot.devicefactory.util.CommonUtils.*
+import static extension org.iot.devicefactory.util.LibraryUtils.*
 
 /**
  * This class contains custom scoping description.
@@ -98,13 +99,6 @@ class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
 				return parentSensor
 			}
 			boardParent = boardParent.parent
-		}
-	}
-	
-	def private BaseSensor asBaseSensor(Sensor sensor) {
-		switch sensor {
-			BaseSensor: sensor
-			OverrideSensor: sensor.parent.asBaseSensor
 		}
 	}
 }

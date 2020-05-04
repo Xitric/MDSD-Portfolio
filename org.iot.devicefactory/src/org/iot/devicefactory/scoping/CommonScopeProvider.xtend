@@ -12,7 +12,7 @@ import org.iot.devicefactory.common.Map
 import org.iot.devicefactory.common.Pipeline
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import static extension org.iot.devicefactory.scoping.CommonScopingUtils.*
+import static extension org.iot.devicefactory.util.CommonUtils.*
 
 /**
  * This class contains custom scoping description.

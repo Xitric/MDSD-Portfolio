@@ -1,4 +1,4 @@
-package org.iot.devicefactory.scoping
+package org.iot.devicefactory.util
 
 import org.iot.devicefactory.common.Map
 import org.iot.devicefactory.common.Pipeline
@@ -9,7 +9,7 @@ import org.iot.devicefactory.common.Variables
 import static extension java.util.Collections.*
 import static extension org.eclipse.xtext.EcoreUtil2.*
 
-class CommonScopingUtils {
+class CommonUtils {
 	
 	static def Iterable<Variable> getVariables(VariableDeclaration variableDeclaration) {
 		switch variableDeclaration {
