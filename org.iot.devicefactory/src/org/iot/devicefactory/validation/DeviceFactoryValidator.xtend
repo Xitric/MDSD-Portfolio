@@ -3,11 +3,14 @@
  */
 package org.iot.devicefactory.validation
 
+import com.google.inject.Inject
 import java.util.HashSet
 import org.eclipse.xtext.validation.Check
 import org.iot.devicefactory.deviceFactory.ChildDevice
 import org.iot.devicefactory.deviceFactory.Device
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
+import org.iot.devicefactory.deviceFactory.Language
+import org.iot.devicefactory.generator.DeviceFactoryGenerator
 
 /**
  * This class contains custom validation rules. 
@@ -17,6 +20,9 @@ import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	
 	public static val INHERITANCE_CYCLE = "org.iot.devicefactory.deviceFactory.INHERITANCE_CYCLE"
+	public static val UNSUPPORTED_LANGUAGE = "org.iot.devicefactory.deviceFactory.UNSUPPORTED_LANGUAGE"
+	
+	@Inject DeviceFactoryGenerator factoryGenerator
 	
 	@Check
 	def validateNoInheritanceCycles(ChildDevice device) {
@@ -33,6 +39,13 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 				ChildDevice: current.parent
 				default: null
 			}
+		}
+	}
+	
+	@Check
+	def validateLanguage(Language language) {
+		if (! factoryGenerator.supportedLanguages.contains(language.name)) {
+			error('''Unsupported language «language.name»''', Literals.LANGUAGE__NAME, UNSUPPORTED_LANGUAGE)
 		}
 	}
 }

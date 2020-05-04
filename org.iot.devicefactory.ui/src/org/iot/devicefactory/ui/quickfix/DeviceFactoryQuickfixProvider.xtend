@@ -3,9 +3,12 @@
  */
 package org.iot.devicefactory.ui.quickfix
 
+import com.google.inject.Inject
 import org.eclipse.xtext.ui.editor.quickfix.Fix
 import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionAcceptor
 import org.eclipse.xtext.validation.Issue
+import org.iot.devicefactory.deviceFactory.Language
+import org.iot.devicefactory.generator.DeviceFactoryGenerator
 import org.iot.devicefactory.validation.DeviceFactoryValidator
 
 /**
@@ -14,6 +17,8 @@ import org.iot.devicefactory.validation.DeviceFactoryValidator
  * See https://www.eclipse.org/Xtext/documentation/310_eclipse_support.html#quick-fixes
  */
 class DeviceFactoryQuickfixProvider extends CommonQuickfixProvider {
+
+	@Inject DeviceFactoryGenerator factoryGenerator
 
 	@Fix(DeviceFactoryValidator.INHERITANCE_CYCLE)
 	def removeInheritance(Issue issue, IssueResolutionAcceptor acceptor) {
@@ -30,5 +35,15 @@ class DeviceFactoryQuickfixProvider extends CommonQuickfixProvider {
 			
 			document.replace(issue.offset - beginOffset, issue.length + beginOffset, "board ")
 		]
+	}
+	
+	@Fix(DeviceFactoryValidator.UNSUPPORTED_LANGUAGE)
+	def swapWithSupportedLanguage(Issue issue, IssueResolutionAcceptor acceptor) {
+		for (String language : factoryGenerator.supportedLanguages) {
+			acceptor.accept(issue, '''Change language to «language»''', '''Change language to «language»''', null) [
+				element, context |
+				(element as Language).name = language
+			]
+		}
 	}
 }

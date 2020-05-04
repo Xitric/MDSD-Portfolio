@@ -3,10 +3,14 @@
  */
 package org.iot.devicefactory.generator
 
+import com.google.inject.Inject
+import java.util.Set
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import org.iot.devicefactory.deviceFactory.Language
+import org.iot.devicefactory.generator.python.PythonGenerator
 
 /**
  * Generates code from your model files on save.
@@ -15,11 +19,19 @@ import org.eclipse.xtext.generator.IGeneratorContext
  */
 class DeviceFactoryGenerator extends AbstractGenerator {
 
+	final Set<LanguageGenerator> languageGenerators
+
+	@Inject new(PythonGenerator pythonGenerator) {
+		this.languageGenerators = #{pythonGenerator}
+	}
+
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-//		fsa.generateFile('greetings.txt', 'People to greet: ' + 
-//			resource.allContents
-//				.filter(Greeting)
-//				.map[name]
-//				.join(', '))
+		val targetLanguage = resource.allContents.filter(Language).head
+		val generator = languageGenerators.findFirst[language == targetLanguage]
+		generator.generate(resource, fsa, context)
+	}
+	
+	def getSupportedLanguages() {
+		return languageGenerators.map[language]
 	}
 }
