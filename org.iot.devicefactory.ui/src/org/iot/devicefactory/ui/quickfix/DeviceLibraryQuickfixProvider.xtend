@@ -6,8 +6,14 @@ package org.iot.devicefactory.ui.quickfix
 import org.eclipse.xtext.ui.editor.quickfix.Fix
 import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionAcceptor
 import org.eclipse.xtext.validation.Issue
+import org.iot.devicefactory.deviceLibrary.BaseSensor
 import org.iot.devicefactory.deviceLibrary.Board
+import org.iot.devicefactory.deviceLibrary.DeviceLibraryFactory
+import org.iot.devicefactory.deviceLibrary.Sensor
 import org.iot.devicefactory.validation.DeviceLibraryValidator
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension org.iot.devicefactory.util.LibraryUtils.*
 
 /**
  * Custom quickfixes.
@@ -22,5 +28,47 @@ class DeviceLibraryQuickfixProvider extends CommonQuickfixProvider {
 			element, context |
 			(element as Board).parent = null
 		]
+	}
+	
+	@Fix(DeviceLibraryValidator.DUPLICATE_SENSOR)
+	def removeDuplicateSensor(Issue issue, IssueResolutionAcceptor acceptor) {
+		acceptor.accept(issue, 'Remove duplicate sensor', 'A sensor can only be declared once per board. Remove duplicate definitions', null) [
+			element, context |
+			element.getContainerOfType(Board).sensors.remove(element)
+		]
+	}
+	
+	@Fix(DeviceLibraryValidator.NON_OVERRIDING_SENSOR)
+	def overrideParentSensor(Issue issue, IssueResolutionAcceptor acceptor) {
+		acceptor.accept(issue, 'Override parent sensor', 'When redeclaring a sensor in a child board, it must override the definition from the parent', null) [
+			element, context |
+			val board = element.getContainerOfType(Board)
+			val sensors = board.sensors
+			val sensorIndex = sensors.indexOf(element)
+			val parentSensor = (element as BaseSensor).parentSensor
+			
+			sensors.set(
+				sensorIndex,
+				DeviceLibraryFactory.eINSTANCE.createOverrideSensor() => [
+					parent = parentSensor
+					preprocess = (element as Sensor).preprocess
+				]
+			)
+		]
+	}
+	
+	private def getParentSensor(BaseSensor child) {
+		val board = child.getContainerOfType(Board)
+		
+		var parent = board.parent
+		while (parent !== null) {
+			for (Sensor sensor: parent.sensors) {
+				if (sensor.asBaseSensor.name == child.name) {
+					return sensor.asBaseSensor
+				}
+			}
+			
+			parent = parent.parent
+		}
 	}
 }
