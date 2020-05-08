@@ -40,15 +40,12 @@ Workflow {
 			validator = {
 				generateDeprecationValidation = true
 			}
-			generator = {
+			formatter = {
+				generateStub = true
 				generateXtendStub = true
 			}
-			// Required to distinguish tuples and parenthesized expressions
-			// from one another
-			parserGenerator = {
-				options = {
-					backtrack = true
-				}
+			generator = {
+				generateXtendStub = true
 			}
 			junitSupport = {
 				junitVersion = "5"
@@ -64,13 +61,12 @@ Workflow {
 			validator = {
 				generateDeprecationValidation = true
 			}
-			generator = {
+			formatter = {
+				generateStub = true
 				generateXtendStub = true
 			}
-			parserGenerator = {
-				options = {
-					backtrack = true
-				}
+			generator = {
+				generateXtendStub = true
 			}
 			junitSupport = {
 				junitVersion = "5"
@@ -88,13 +84,12 @@ Workflow {
 			validator = {
 				generateDeprecationValidation = true
 			}
-			generator = {
+			formatter = {
+				generateStub = true
 				generateXtendStub = true
 			}
-			parserGenerator = {
-				options = {
-					backtrack = true
-				}
+			generator = {
+				generateXtendStub = true
 			}
 			junitSupport = {
 				junitVersion = "5"
