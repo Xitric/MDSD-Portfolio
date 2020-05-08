@@ -143,4 +143,9 @@ class ExpressionTypeChecker {
 	def dispatch ExpressionType typeOf(Expression exp) {
 		ExpressionType.BOOLEAN
 	}
+	
+	// Fall back in case of null invocations
+	def dispatch ExpressionType typeOf(Void exp) {
+		ExpressionType.VOID
+	}
 }

@@ -25,9 +25,13 @@ import org.iot.devicefactory.common.Or
 import org.iot.devicefactory.common.Sub
 import org.iot.devicefactory.common.Tuple
 import org.iot.devicefactory.common.Unequal
+import org.iot.devicefactory.common.Variable
+import org.iot.devicefactory.common.Variables
 import org.iot.devicefactory.typing.ExpressionType
 import org.iot.devicefactory.typing.ExpressionTypeChecker
 import org.iot.devicefactory.typing.TupleExpressionType
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
 
 /**
  * This class contains custom validation rules. 
@@ -38,26 +42,32 @@ class CommonValidator extends AbstractCommonValidator {
 
 	@Inject extension ExpressionTypeChecker
 
-	def validateType(Expression exp, ExpressionType expected, EStructuralFeature feature) {
+	def dispatch validateType(Expression exp, ExpressionType expected, EStructuralFeature feature) {
 		val actual = exp.typeOf
 		if (actual != expected) {
 			error('''Expected «expected», got «actual»''', feature)
 		}
 	}
 	
-	def validateNumber(Expression exp, EStructuralFeature feature) {
+	def dispatch validateType(Void exp, ExpressionType expected, EStructuralFeature feature) {
+		// Fall back to handle null invocations of extension methods
+		error('''Expected «expected», got nothing''', feature)
+	}
+	
+	def dispatch validateNumber(Expression exp, EStructuralFeature feature) {
 		val actual = exp.typeOf
 		if (!actual.isNumberType) {
 			error('''Expected integer or double, got «actual»''', feature)
 		}
 	}
+	
+	def dispatch validateNumber(Void exp, EStructuralFeature feature) {
+		// Fall back to handle null invocations of extension methods
+		error("Expected integer or double, got nothing", feature)
+	}
 
 	@Check
 	def validateExpression(Conditional exp) {
-		if (exp.condition === null || exp.first === null || exp.second === null) {
-			return
-		}
-
 		exp.condition.validateType(ExpressionType.BOOLEAN, Literals.CONDITIONAL__CONDITION)
 
 		val expected = exp.typeOf
@@ -170,6 +180,16 @@ class CommonValidator extends AbstractCommonValidator {
 			if (type instanceof TupleExpressionType) {
 				error('''Tuples are only allowed at the top-level. This tuple contains a nested tuple: «type»''', Literals.TUPLE__VALUES)
 				return
+			}
+		}
+	}
+	
+	@Check
+	def validateNoDuplicateVariables(Variable variable) {
+		val variables = variable.getContainerOfType(Variables)
+		if (variables !== null) {
+			if (variables.vars.takeWhile[it !== variable].exists[name == variable.name]) {
+				error('''The variable «variable.name» is a duplicate. All variable names in a tuple must be unique''', Literals.VARIABLE__NAME)
 			}
 		}
 	}

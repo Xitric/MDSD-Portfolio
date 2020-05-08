@@ -6,6 +6,7 @@ class ExpressionType {
 	public static val DOUBLE = new ExpressionType("double")
 	public static val BOOLEAN = new ExpressionType("boolean")
 	public static val STRING = new ExpressionType("string")
+	public static val VOID = new ExpressionType("void")
 
 	static def ExpressionType TUPLE(ExpressionType... elements) {
 		new TupleExpressionType(elements)

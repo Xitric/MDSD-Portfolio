@@ -8,11 +8,12 @@ import org.eclipse.xtext.validation.Check
 import org.iot.devicefactory.deviceLibrary.BaseSensor
 import org.iot.devicefactory.deviceLibrary.Board
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
+import org.iot.devicefactory.deviceLibrary.Library
 import org.iot.devicefactory.deviceLibrary.OverrideSensor
+import org.iot.devicefactory.deviceLibrary.Sensor
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.LibraryUtils.*
-import org.iot.devicefactory.deviceLibrary.Sensor
 
 /**
  * This class contains custom validation rules. 
@@ -37,6 +38,14 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 			
 			known.add(current)
 			current = current.parent
+		}
+	}
+	
+	@Check
+	def validateNoDuplicateBoards(Board board) {
+		val library = board.getContainerOfType(Library)
+		if (library.boards.takeWhile[it !== board].exists[name == board.name]) {
+			error("Duplicate board names are not allowed. Choose a unique name", Literals.BOARD__NAME)
 		}
 	}
 	
