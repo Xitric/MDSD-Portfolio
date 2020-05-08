@@ -23,7 +23,7 @@ BaseSensor:
 ;
 
 OverrideSensor:
-	'override' 'sensor' parent=[Sensor] BEGIN
+	'override' 'sensor' name=ID BEGIN
 		preprocess = Preprocess
 	END
 ;

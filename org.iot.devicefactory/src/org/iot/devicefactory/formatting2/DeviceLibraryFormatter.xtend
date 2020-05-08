@@ -56,7 +56,7 @@ class DeviceLibraryFormatter extends CommonFormatter {
 		overrideSensor.regionFor.keyword("sensor").append[oneSpace]
 		
 		if (overrideSensor.preprocess !== null) {
-			overrideSensor.regionFor.feature(Literals.OVERRIDE_SENSOR__PARENT).append[newLine]
+			overrideSensor.regionFor.feature(Literals.SENSOR__NAME).append[newLine]
 			
 			overrideSensor.interior[indent]
 			overrideSensor.preprocess.format

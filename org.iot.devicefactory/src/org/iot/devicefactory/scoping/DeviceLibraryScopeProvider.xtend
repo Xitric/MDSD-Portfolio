@@ -4,7 +4,6 @@
 package org.iot.devicefactory.scoping
 
 import com.google.inject.Inject
-import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.IScope
@@ -19,7 +18,6 @@ import org.iot.devicefactory.deviceLibrary.Sensor
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.CommonUtils.*
-import static extension org.iot.devicefactory.util.LibraryUtils.*
 
 /**
  * This class contains custom scoping description.
@@ -33,8 +31,6 @@ class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
 	
 	override getScope(EObject context, EReference reference) {
 		switch reference {
-			case Literals.OVERRIDE_SENSOR__PARENT:
-				context.sensorNameScope
 			case Literals.BOARD__PARENT:
 				context.boardParentScope
 			case CommonPackage.Literals.REFERENCE__VARIABLE:
@@ -44,21 +40,9 @@ class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
 		}
 	}
 	
-	def private IScope getSensorNameScope(EObject context) {
-		var current = context.getContainerOfType(Board)?.parent
-		val sensors = new HashSet<Sensor>()
-		
-		while (current !== null) {
-			sensors.addAll(current.sensors)
-			current = current.parent
-		}
-		
-		Scopes.scopeFor(sensors)
-	}
-	
 	def private IScope getBoardParentScope(EObject context) {
 		val library = context.getContainerOfType(Library)
-		Scopes.scopeFor(library.boards.filter[it !== context])
+		Scopes.scopeFor(library.boards.takeWhile[it !== context])
 	}
 	
 	def private IScope getReferenceVariableScope(EObject context) {
@@ -94,7 +78,7 @@ class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
 		var boardParent = child.getContainerOfType(Board).parent
 		
 		while (boardParent !== null) {
-			val parentSensor = boardParent.sensors.findFirst[asBaseSensor === child.asBaseSensor]
+			val parentSensor = boardParent.sensors.findFirst[name == child.name]
 			if (parentSensor !== null) {
 				return parentSensor
 			}

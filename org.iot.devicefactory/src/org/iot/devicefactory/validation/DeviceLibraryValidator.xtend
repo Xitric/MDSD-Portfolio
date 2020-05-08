@@ -50,35 +50,29 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 	}
 	
 	@Check
-	def validateNoDuplicateBaseSensors(BaseSensor sensor) {
+	def validateNoDuplicateSensors(Sensor sensor) {
 		val board = sensor.getContainerOfType(Board)
-		if (board.sensors.takeWhile[it !== sensor].exists[it.asBaseSensor.name == sensor.name]) {
-			error('''Duplicate sensor definition «sensor.name» in same board''', Literals.BASE_SENSOR__NAME, DUPLICATE_SENSOR)
-		}
-	}
-	
-	@Check
-	def validateNoDuplicateOverrideSensors(OverrideSensor sensor) {
-		val board = sensor.getContainerOfType(Board)
-		if (board.sensors.takeWhile[it !== sensor].exists[it.asBaseSensor.name == sensor.asBaseSensor.name]) {
-			error('''Duplicate sensor definition «sensor.asBaseSensor.name» in same board''', Literals.OVERRIDE_SENSOR__PARENT, DUPLICATE_SENSOR)
+		if (board.sensors.takeWhile[it !== sensor].exists[it.name == sensor.name]) {
+			error('''Duplicate sensor definition «sensor.name» in same board''', Literals.SENSOR__NAME, DUPLICATE_SENSOR)
 		}
 	}
 	
 	@Check
 	def validateChildSensorsOverride(BaseSensor sensor) {
-		var parent = sensor.getContainerOfType(Board).parent
-		
-		while (parent !== null) {
-			for (Sensor parentSensor: parent.sensors) {
-				if (parentSensor.asBaseSensor.name == sensor.name) {
-					error('''Redeclared sensor «sensor.name» must override inherited definition from «parent.name»''',
-						Literals.BASE_SENSOR__NAME, NON_OVERRIDING_SENSOR
-					)
-					return
-				}
-			}
-			parent = parent.parent
+		val board = sensor.getContainerOfType(Board)
+		if (board.parent.allHierarchySensors.exists[name == sensor.name]) {
+			error('''Redeclared sensor «sensor.name» must override inherited definition from parent''',
+				Literals.SENSOR__NAME, NON_OVERRIDING_SENSOR
+			)
+		}
+	}
+	
+	//TODO: Quickfix to remove override
+	@Check
+	def validateLegalOverride(OverrideSensor sensor) {
+		val board = sensor.getContainerOfType(Board)
+		if (! board.parent.allHierarchySensors.exists[name == sensor.name]) {
+			error('''No such sensor «sensor.name» to override from parent''', Literals.SENSOR__NAME)
 		}
 	}
 }

@@ -6,7 +6,6 @@ package org.iot.devicefactory.ui.quickfix
 import org.eclipse.xtext.ui.editor.quickfix.Fix
 import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionAcceptor
 import org.eclipse.xtext.validation.Issue
-import org.iot.devicefactory.deviceLibrary.BaseSensor
 import org.iot.devicefactory.deviceLibrary.Board
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryFactory
 import org.iot.devicefactory.deviceLibrary.Sensor
@@ -45,30 +44,15 @@ class DeviceLibraryQuickfixProvider extends CommonQuickfixProvider {
 			val board = element.getContainerOfType(Board)
 			val sensors = board.sensors
 			val sensorIndex = sensors.indexOf(element)
-			val parentSensor = (element as BaseSensor).parentSensor
+			val parentSensor = (element as Sensor).parentSensor
 			
 			sensors.set(
 				sensorIndex,
 				DeviceLibraryFactory.eINSTANCE.createOverrideSensor() => [
-					parent = parentSensor
+					name = parentSensor.name
 					preprocess = (element as Sensor).preprocess
 				]
 			)
 		]
-	}
-	
-	private def getParentSensor(BaseSensor child) {
-		val board = child.getContainerOfType(Board)
-		
-		var parent = board.parent
-		while (parent !== null) {
-			for (Sensor sensor: parent.sensors) {
-				if (sensor.asBaseSensor.name == child.name) {
-					return sensor.asBaseSensor
-				}
-			}
-			
-			parent = parent.parent
-		}
 	}
 }
