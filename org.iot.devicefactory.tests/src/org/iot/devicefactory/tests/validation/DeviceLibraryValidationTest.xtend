@@ -22,6 +22,7 @@ class DeviceLibraryValidationTest {
 
 	@Test def void testDuplicateBoards() {
 		'''
+		package iot
 		define board BoardA
 			sensor a pin(12) as p
 		
@@ -36,6 +37,7 @@ class DeviceLibraryValidationTest {
 	
 	@Test def void testDuplicateBaseSensors() {
 		'''
+		package iot
 		define board BoardA
 			sensor a pin(12) as p
 			sensor a pin(12) as p
@@ -44,6 +46,7 @@ class DeviceLibraryValidationTest {
 	
 	@Test def void testDuplicateMixSensors() {
 		'''
+		package iot
 		define board BoardA
 			sensor a pin(12) as p
 		
@@ -56,6 +59,7 @@ class DeviceLibraryValidationTest {
 	
 	@Test def void testDuplicateOverrideSensors() {
 		'''
+		package iot
 		define board BoardA
 			sensor a pin(12) as p
 		
@@ -77,6 +81,7 @@ class DeviceLibraryValidationTest {
 	
 	@Test def void testMissingOverride() {
 		'''
+		package iot
 		define board BoardA
 			sensor a pin(12) as p
 		
@@ -91,6 +96,7 @@ class DeviceLibraryValidationTest {
 	
 	@Test def void testInvalidOverride() {
 		'''
+		package iot
 		define board BoardA
 			override sensor a
 		'''.parse.assertError(
@@ -102,6 +108,7 @@ class DeviceLibraryValidationTest {
 	
 	@Test def void testInvalidOverrideWithParent() {
 		'''
+		package iot
 		define board BoardA
 			sensor a pin(12) as p
 		

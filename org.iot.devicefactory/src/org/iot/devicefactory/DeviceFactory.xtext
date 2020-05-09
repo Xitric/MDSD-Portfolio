@@ -18,7 +18,7 @@ Deployment:
 ;
 
 Library:
-	'library' name=ID
+	'library' importedNamespace=QualifiedNameWithWildcard
 ;
 
 Language:
@@ -37,7 +37,7 @@ Device:
 ;
 
 BaseDevice:
-	'device' name=ID 'board' board=[Library::Board]
+	'device' name=ID 'board' board=[Library::Board|QualifiedName]
 ;
 
 ChildDevice:

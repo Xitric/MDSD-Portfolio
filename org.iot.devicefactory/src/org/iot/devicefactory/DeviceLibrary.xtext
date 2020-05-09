@@ -3,11 +3,12 @@ grammar org.iot.devicefactory.DeviceLibrary with org.iot.devicefactory.Common
 generate deviceLibrary "http://www.iot.org/devicefactory/DeviceLibrary"
 
 Library:
+	'package' name=QualifiedName
 	boards += Board*
 ;
 
 Board:
-	'define' 'board' name=ID ('includes' parent=[Board])? BEGIN
+	'define' 'board' name=ID ('includes' parent=[Board|QualifiedName])? BEGIN
 		sensors += Sensor+
 	END
 ;

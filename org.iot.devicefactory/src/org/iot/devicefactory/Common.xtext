@@ -134,6 +134,14 @@ Variables:
 	'(' vars+=Variable (',' vars+=Variable)+ ')'
 ;
 
+QualifiedName:
+	ID ('.' ID)*
+;
+
+QualifiedNameWithWildcard:
+    QualifiedName '.*'?
+;
+
 StringLiteral:
 	value=STRING
 ;

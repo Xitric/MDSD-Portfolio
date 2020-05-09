@@ -21,6 +21,7 @@ class DeviceLibraryScopingTest {
 	// No forward references for board parents
 	@Test def void testBoardScope() {
 		'''
+		package iot
 		define board BoardA
 			sensor a pin(12) as p
 		
@@ -48,6 +49,7 @@ class DeviceLibraryScopingTest {
 	// Pipeline scope using variable from base sensor
 	@Test def void testBaseSensorVariableScope() {
 		'''
+		package iot
 		define board BoardA
 			sensor a pin(12) as p
 				preprocess filter[true]
@@ -69,6 +71,7 @@ class DeviceLibraryScopingTest {
 	// Pipeline scope using variable from parent sensor
 	@Test def void testParentSensorVariableScope() {
 		'''
+		package iot
 		define board BoardA
 			sensor a pin(12) as p
 			
@@ -106,6 +109,7 @@ class DeviceLibraryScopingTest {
 	// Pipeline scope using variables from immediate parent sensor
 	@Test def void testParentSensorVariableScopeShadowing() {
 		'''
+		package iot
 		define board BoardA
 			sensor a pin(12, 13, 14) as (p, q, r)
 				preprocess filter[true]
@@ -128,6 +132,7 @@ class DeviceLibraryScopingTest {
 	// Pipeline scope using variable from parent preprocess only
 	@Test def void testParentSensorPreprocessScope() {
 		'''
+		package iot
 		define board BoardA
 			sensor a pin(12) as p
 				preprocess map[p => k]

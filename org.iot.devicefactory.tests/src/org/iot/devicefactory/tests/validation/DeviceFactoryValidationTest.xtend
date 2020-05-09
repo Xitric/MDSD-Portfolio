@@ -28,7 +28,7 @@ class DeviceFactoryValidationTest {
 		val resourceSet = makeBoardLibrary()
 		
 		'''
-		library base_boards
+		library iot.*
 		language python
 		'''.parse(resourceSet).assertError(
 			Literals.DEPLOYMENT,
@@ -41,7 +41,7 @@ class DeviceFactoryValidationTest {
 		val resourceSet = makeBoardLibrary()
 		
 		'''
-		library base_boards
+		library iot.*
 		language python
 		channel endpoint
 		'''.parse(resourceSet).assertError(
@@ -55,7 +55,7 @@ class DeviceFactoryValidationTest {
 		val resourceSet = makeBoardLibrary()
 		
 		'''
-		library base_boards
+		library iot.*
 		language python
 		channel endpoint
 		device controller board esp32
@@ -81,7 +81,7 @@ class DeviceFactoryValidationTest {
 		val resourceSet = makeBoardLibrary()
 		
 		'''
-		library base_boards
+		library iot.*
 		language python
 		channel endpoint
 		'''.parse(resourceSet).assertError(
@@ -95,7 +95,7 @@ class DeviceFactoryValidationTest {
 		val resourceSet = makeBoardLibrary()
 		
 		'''
-		library base_boards
+		library iot.*
 		language python
 		channel endpoint
 		device controller board esp32
@@ -121,7 +121,7 @@ class DeviceFactoryValidationTest {
 		val resourceSet = makeBoardLibrary()
 		
 		'''
-		library base_boards
+		library iot.*
 		language python
 		channel inserial
 		channel endpoint
@@ -153,6 +153,7 @@ class DeviceFactoryValidationTest {
 		val resourceSet = resourceSetProvider.get
 		val iotc = resourceSet.createResource(URI.createURI("base_boards.iotc"))
 		iotc.load(new StringInputStream('''
+		package iot
 		define board esp32
 			sensor barometer i2c(0x6D) as p
 		'''), emptyMap)
