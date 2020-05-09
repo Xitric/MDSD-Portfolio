@@ -7,12 +7,9 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import org.iot.devicefactory.common.CommonPackage
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
 import org.iot.devicefactory.deviceLibrary.Library
-import org.iot.devicefactory.deviceLibrary.OverrideSensor
 import org.iot.devicefactory.tests.DeviceLibraryInjectorProvider
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-
-import static extension org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(DeviceLibraryInjectorProvider)

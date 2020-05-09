@@ -10,7 +10,6 @@ import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.iot.devicefactory.common.CommonPackage
 import org.iot.devicefactory.deviceLibrary.BaseSensor
-import org.iot.devicefactory.deviceLibrary.Board
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
 import org.iot.devicefactory.deviceLibrary.Library
 import org.iot.devicefactory.deviceLibrary.OverrideSensor
@@ -18,6 +17,7 @@ import org.iot.devicefactory.deviceLibrary.Sensor
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.CommonUtils.*
+import static extension org.iot.devicefactory.util.LibraryUtils.*
 
 /**
  * This class contains custom scoping description.
@@ -59,7 +59,11 @@ class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
 			}
 			OverrideSensor: {
 				val parentSensor = sensor.parentSensor
-				val parentPreprocess = parentSensor?.preprocess
+				if (parentSensor === null) {
+					return IScope.NULLSCOPE
+				}
+				
+				val parentPreprocess = parentSensor.preprocess
 				if (parentPreprocess !== null) {
 					val parentOutVariables = parentPreprocess.pipeline.variables
 					if (! parentOutVariables.empty) {
@@ -72,17 +76,5 @@ class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
 		}
 		
 		return IScope.NULLSCOPE
-	}
-	
-	def private getParentSensor(OverrideSensor child) {
-		var boardParent = child.getContainerOfType(Board).parent
-		
-		while (boardParent !== null) {
-			val parentSensor = boardParent.sensors.findFirst[name == child.name]
-			if (parentSensor !== null) {
-				return parentSensor
-			}
-			boardParent = boardParent.parent
-		}
 	}
 }
