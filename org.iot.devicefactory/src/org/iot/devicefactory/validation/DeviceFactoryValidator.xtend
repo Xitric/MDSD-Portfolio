@@ -6,11 +6,15 @@ package org.iot.devicefactory.validation
 import com.google.inject.Inject
 import java.util.HashSet
 import org.eclipse.xtext.validation.Check
+import org.eclipse.xtext.validation.CheckType
 import org.iot.devicefactory.deviceFactory.ChildDevice
+import org.iot.devicefactory.deviceFactory.Deployment
 import org.iot.devicefactory.deviceFactory.Device
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.deviceFactory.Language
 import org.iot.devicefactory.generator.DeviceFactoryGenerator
+
+//import static extension org.eclipse.xtext.EcoreUtil2.*
 
 /**
  * This class contains custom validation rules. 
@@ -19,10 +23,38 @@ import org.iot.devicefactory.generator.DeviceFactoryGenerator
  */
 class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	
+	public static val MISSING_CHANNEL = "org.iot.devicefactory.deviceFactory.MISSING_CHANNEL"
+	public static val MISSING_DEVICE = "org.iot.devicefactory.deviceFactory.MISSING_DEVICE"
+	public static val AMBIGUOUS_FOG = "org.iot.devicefactory.deviceFactory.AMBIGUOUS_FOG"
+	public static val MISSING_CLOUD = "org.iot.devicefactory.deviceFactory.MISSING_CLOUD"
+	public static val AMBIGUOUS_CLOUD = "org.iot.devicefactory.deviceFactory.AMBIGUOUS_CLOUD"
 	public static val INHERITANCE_CYCLE = "org.iot.devicefactory.deviceFactory.INHERITANCE_CYCLE"
 	public static val UNSUPPORTED_LANGUAGE = "org.iot.devicefactory.deviceFactory.UNSUPPORTED_LANGUAGE"
 	
 	@Inject DeviceFactoryGenerator factoryGenerator
+	
+	@Check(CheckType.NORMAL)
+	def validateDeployment(Deployment deployment) {
+		if (deployment.channels.empty) {
+			error("There must be at least one channel", Literals.DEPLOYMENT__CHANNELS, MISSING_CHANNEL)
+		}
+		
+		if (deployment.devices.empty) {
+			error("There must be at least one device", Literals.DEPLOYMENT__DEVICES, MISSING_DEVICE)
+		}
+		
+		if (deployment.fog.size > 1) {
+			error("There can be at most one fog", Literals.DEPLOYMENT__FOG, AMBIGUOUS_FOG)
+		}
+		
+		if (deployment.cloud.size == 0) {
+			error("There must be a cloud", Literals.DEPLOYMENT__FOG, MISSING_CLOUD)
+		}
+		
+		if (deployment.cloud.size > 1) {
+			error("There can be at most one cloud", Literals.DEPLOYMENT__FOG, AMBIGUOUS_CLOUD)
+		}
+	}
 	
 	@Check
 	def validateNoInheritanceCycles(ChildDevice device) {
