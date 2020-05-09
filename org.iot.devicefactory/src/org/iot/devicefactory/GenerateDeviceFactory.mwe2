@@ -32,7 +32,7 @@ Workflow {
 		}
 		language = StandardLanguage {
 			name = "org.iot.devicefactory.Common"
-			fileExtensions = "iot,iotc"
+			fileExtensions = "common"
 			
 			serializer = {
 				generateStub = false
