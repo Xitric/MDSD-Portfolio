@@ -15,6 +15,7 @@ import org.iot.devicefactory.tests.MultiLanguageInjectorProvider
 import org.iot.devicefactory.validation.DeviceFactoryValidator
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
+import org.eclipse.xtext.diagnostics.Diagnostic
 
 @ExtendWith(InjectionExtension)
 @InjectWith(MultiLanguageInjectorProvider)
@@ -28,7 +29,7 @@ class DeviceFactoryValidationTest {
 		val resourceSet = makeBoardLibrary()
 		
 		'''
-		library iot.*
+		library iot.boards.*
 		language python
 		'''.parse(resourceSet).assertError(
 			Literals.DEPLOYMENT,
@@ -41,7 +42,7 @@ class DeviceFactoryValidationTest {
 		val resourceSet = makeBoardLibrary()
 		
 		'''
-		library iot.*
+		library iot.boards.*
 		language python
 		channel endpoint
 		'''.parse(resourceSet).assertError(
@@ -55,7 +56,7 @@ class DeviceFactoryValidationTest {
 		val resourceSet = makeBoardLibrary()
 		
 		'''
-		library iot.*
+		library iot.boards.*
 		language python
 		channel endpoint
 		device controller board esp32
@@ -81,7 +82,7 @@ class DeviceFactoryValidationTest {
 		val resourceSet = makeBoardLibrary()
 		
 		'''
-		library iot.*
+		library iot.boards.*
 		language python
 		channel endpoint
 		'''.parse(resourceSet).assertError(
@@ -95,7 +96,7 @@ class DeviceFactoryValidationTest {
 		val resourceSet = makeBoardLibrary()
 		
 		'''
-		library iot.*
+		library iot.boards.*
 		language python
 		channel endpoint
 		device controller board esp32
@@ -117,11 +118,99 @@ class DeviceFactoryValidationTest {
 		)
 	}
 	
-	@Test def void legalDeployment() {
+	@Test def void testIllegalBoardReference() {
+		'''
+		language python
+		channel endpoint
+		device controller board esp32
+			sensor barometer sample signal
+				data raw_pressure
+					out endpoint
+		'''.parse.assertError(
+			Literals.BASE_DEVICE,
+			Diagnostic.LINKING_DIAGNOSTIC,
+			"Couldn't resolve reference to Board 'esp32'"
+		)
+	}
+	
+	@Test def void testFullyQualifiedBoard() {
+		val resourceSet = makeBoardLibrary()
+		
+		'''
+		language python
+		channel endpoint
+		device controller board iot.boards.esp32
+			sensor barometer sample signal
+				data raw_pressure
+					out endpoint
+		'''.parse(resourceSet).assertNoError(Diagnostic.LINKING_DIAGNOSTIC)
+	}
+	
+	@Test def void testImportedBoard() {
+		val resourceSet = makeBoardLibrary()
+		
+		'''
+		library iot.boards.esp32
+		language python
+		channel endpoint
+		device controller board esp32
+			sensor barometer sample signal
+				data raw_pressure
+					out endpoint
+		'''.parse(resourceSet).assertNoError(Diagnostic.LINKING_DIAGNOSTIC)
+	}
+	
+	@Test def void testWildcardImport() {
+		val resourceSet = makeBoardLibrary()
+		
+		'''
+		library iot.boards.*
+		language python
+		channel endpoint
+		device controller board esp32
+			sensor barometer sample signal
+				data raw_pressure
+					out endpoint
+		'''.parse(resourceSet).assertNoError(Diagnostic.LINKING_DIAGNOSTIC)
+	}
+	
+	@Test def void testPackageImport() {
 		val resourceSet = makeBoardLibrary()
 		
 		'''
 		library iot.*
+		language python
+		channel endpoint
+		device controller board boards.esp32
+			sensor barometer sample signal
+				data raw_pressure
+					out endpoint
+		'''.parse(resourceSet).assertNoError(Diagnostic.LINKING_DIAGNOSTIC)
+	}
+	
+	@Test def void testPackageImportNoWildcard() {
+		val resourceSet = makeBoardLibrary()
+		
+		'''
+		library iot
+		language python
+		channel endpoint
+		device controller board boards.esp32
+			sensor barometer sample signal
+				data raw_pressure
+					out endpoint
+		'''.parse(resourceSet).assertError(
+			Literals.BASE_DEVICE,
+			Diagnostic.LINKING_DIAGNOSTIC,
+			"Couldn't resolve reference to Board 'boards.esp32'"
+		)
+	}
+	
+	@Test def void testLegalDeployment() {
+		val resourceSet = makeBoardLibrary()
+		
+		'''
+		library iot.boards.*
 		language python
 		channel inserial
 		channel endpoint
@@ -147,9 +236,9 @@ class DeviceFactoryValidationTest {
 	
 	private def makeBoardLibrary() {
 		val resourceSet = resourceSetProvider.get
-		val iotc = resourceSet.createResource(URI.createURI("resource.DeviceFactory.src.iot.base_boards.iotc"))
+		val iotc = resourceSet.createResource(URI.createURI("resource/DeviceFactory/src/iot/boards/base_boards.iotc"))
 		iotc.load(new StringInputStream('''
-		package iot
+		package iot.boards
 		define board esp32
 			sensor barometer i2c(0x6D) as p
 		'''), emptyMap)

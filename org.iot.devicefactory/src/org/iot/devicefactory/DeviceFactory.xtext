@@ -7,7 +7,7 @@ generate deviceFactory "http://www.iot.org/devicefactory/DeviceFactory"
 Deployment:
 	// There should be at least one library - otherwise we cannot define any
 	// devices
-	libraries+=Library+
+	libraries+=Library*
 	language=Language
 	
 	// We want to be able to specify these things in any order
