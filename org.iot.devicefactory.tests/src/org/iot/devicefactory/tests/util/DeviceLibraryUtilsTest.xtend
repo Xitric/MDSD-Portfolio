@@ -14,7 +14,7 @@ import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(DeviceLibraryInjectorProvider)
-class LibraryUtilsTest {
+class DeviceLibraryUtilsTest {
 	
 	@Inject extension ParseHelper<Library>
 	

@@ -29,7 +29,7 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 	public static val NON_OVERRIDING_SENSOR = "org.iot.devicefactory.deviceLibrary.NON_OVERRIDING_SENSOR"
 	
 	@Check
-	def calidatePackage(Library library) {
+	def validatePackage(Library library) {
 		val segments = library.eResource.URI.segments
 		
 		if (segments.get(0) != "resource" || segments.get(2) != "src") {
@@ -87,7 +87,6 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 		}
 	}
 	
-	//TODO: Quickfix to remove override
 	@Check
 	def validateLegalOverride(OverrideSensor sensor) {
 		val board = sensor.getContainerOfType(Board)
