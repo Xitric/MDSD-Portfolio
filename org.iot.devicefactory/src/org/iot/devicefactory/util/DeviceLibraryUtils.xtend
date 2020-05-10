@@ -6,7 +6,7 @@ import org.iot.devicefactory.deviceLibrary.Sensor
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import java.util.ArrayList
 
-class LibraryUtils {
+class DeviceLibraryUtils {
 
 	static def getAllHierarchySensors(Board board) {
 		board.boardHierarchy.flatMap[sensors]

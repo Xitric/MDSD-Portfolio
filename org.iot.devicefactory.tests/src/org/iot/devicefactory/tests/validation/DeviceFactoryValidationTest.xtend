@@ -26,7 +26,7 @@ class DeviceFactoryValidationTest {
 	@Inject Provider<ResourceSet> resourceSetProvider
 	
 	@Test def void testDeploymentNoChannel() {
-		val resourceSet = makeBoardLibrary()
+		val resourceSet = makePackagedBoardLibrary()
 		
 		'''
 		library iot.boards.*
@@ -39,7 +39,7 @@ class DeviceFactoryValidationTest {
 	}
 	
 	@Test def void testDeploymentNoDevice() {
-		val resourceSet = makeBoardLibrary()
+		val resourceSet = makePackagedBoardLibrary()
 		
 		'''
 		library iot.boards.*
@@ -53,7 +53,7 @@ class DeviceFactoryValidationTest {
 	}
 	
 	@Test def void testDeploymentMultipleFogs() {
-		val resourceSet = makeBoardLibrary()
+		val resourceSet = makePackagedBoardLibrary()
 		
 		'''
 		library iot.boards.*
@@ -79,7 +79,7 @@ class DeviceFactoryValidationTest {
 	}
 	
 	@Test def void testDeploymentNoCloud() {
-		val resourceSet = makeBoardLibrary()
+		val resourceSet = makePackagedBoardLibrary()
 		
 		'''
 		library iot.boards.*
@@ -93,7 +93,7 @@ class DeviceFactoryValidationTest {
 	}
 	
 	@Test def void testDeploymentMultipleClouds() {
-		val resourceSet = makeBoardLibrary()
+		val resourceSet = makePackagedBoardLibrary()
 		
 		'''
 		library iot.boards.*
@@ -134,7 +134,7 @@ class DeviceFactoryValidationTest {
 	}
 	
 	@Test def void testFullyQualifiedBoard() {
-		val resourceSet = makeBoardLibrary()
+		val resourceSet = makePackagedBoardLibrary()
 		
 		'''
 		language python
@@ -147,7 +147,7 @@ class DeviceFactoryValidationTest {
 	}
 	
 	@Test def void testImportedBoard() {
-		val resourceSet = makeBoardLibrary()
+		val resourceSet = makePackagedBoardLibrary()
 		
 		'''
 		library iot.boards.esp32
@@ -161,7 +161,7 @@ class DeviceFactoryValidationTest {
 	}
 	
 	@Test def void testWildcardImport() {
-		val resourceSet = makeBoardLibrary()
+		val resourceSet = makePackagedBoardLibrary()
 		
 		'''
 		library iot.boards.*
@@ -175,7 +175,7 @@ class DeviceFactoryValidationTest {
 	}
 	
 	@Test def void testPackageImport() {
-		val resourceSet = makeBoardLibrary()
+		val resourceSet = makePackagedBoardLibrary()
 		
 		'''
 		library iot.*
@@ -189,7 +189,7 @@ class DeviceFactoryValidationTest {
 	}
 	
 	@Test def void testPackageImportNoWildcard() {
-		val resourceSet = makeBoardLibrary()
+		val resourceSet = makePackagedBoardLibrary()
 		
 		'''
 		library iot
@@ -206,8 +206,44 @@ class DeviceFactoryValidationTest {
 		)
 	}
 	
+	@Test def void testUnknownImport() {
+		val resourceSet = makePackagedBoardLibrary()
+		
+		'''
+		library ioot
+		language python
+		channel endpoint
+		device controller board boards.esp32
+			sensor barometer sample signal
+				data raw_pressure
+					out endpoint
+		'''.parse(resourceSet).assertError(
+			Literals.LIBRARY,
+			DeviceFactoryValidator.SUPERFLUOUS_LIBRARY,
+			"No resource found with qualified name ioot"
+		)
+	}
+	
+	@Test def void testSuperfluousImport() {
+		val resourceSet = makeRootBoardLibrary()
+		
+		'''
+		library esp32
+		language python
+		channel endpoint
+		device controller board boards.esp32
+			sensor barometer sample signal
+				data raw_pressure
+					out endpoint
+		'''.parse(resourceSet).assertWarning(
+			Literals.LIBRARY,
+			DeviceFactoryValidator.SUPERFLUOUS_LIBRARY,
+			"Unnecessary import of library esp32 has no effect"
+		)
+	}
+	
 	@Test def void testLegalDeployment() {
-		val resourceSet = makeBoardLibrary()
+		val resourceSet = makePackagedBoardLibrary()
 		
 		'''
 		library iot.boards.*
@@ -234,11 +270,19 @@ class DeviceFactoryValidationTest {
 		'''.parse(resourceSet).assertNoErrors
 	}
 	
-	private def makeBoardLibrary() {
+	private def makeRootBoardLibrary() {
+		makeBoardLibrary("")
+	}
+	
+	private def makePackagedBoardLibrary() {
+		makeBoardLibrary("iot.boards")
+	}
+	
+	private def makeBoardLibrary(String pkg) {
 		val resourceSet = resourceSetProvider.get
-		val iotc = resourceSet.createResource(URI.createURI("resource/DeviceFactory/src/iot/boards/base_boards.iotc"))
+		val iotc = resourceSet.createResource(URI.createURI('''resource/DeviceFactory/src/«pkg.replace(".", "/") + "/"»base_boards.iotc'''))
 		iotc.load(new StringInputStream('''
-		package iot.boards
+		«IF !pkg.empty»package «pkg»«ENDIF»
 		define board esp32
 			sensor barometer i2c(0x6D) as p
 		'''), emptyMap)

@@ -9,8 +9,8 @@ import org.iot.devicefactory.tests.DeviceLibraryInjectorProvider
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
-import static extension org.iot.devicefactory.util.LibraryUtils.*
 import static extension org.junit.jupiter.api.Assertions.*
+import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(DeviceLibraryInjectorProvider)

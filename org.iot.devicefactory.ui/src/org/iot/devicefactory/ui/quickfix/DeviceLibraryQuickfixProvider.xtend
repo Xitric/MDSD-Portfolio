@@ -13,7 +13,7 @@ import org.iot.devicefactory.deviceLibrary.Sensor
 import org.iot.devicefactory.validation.DeviceLibraryValidator
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import static extension org.iot.devicefactory.util.LibraryUtils.*
+import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
 
 /**
  * Custom quickfixes.

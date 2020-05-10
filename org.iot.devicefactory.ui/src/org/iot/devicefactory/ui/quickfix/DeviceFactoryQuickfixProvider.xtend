@@ -20,6 +20,27 @@ class DeviceFactoryQuickfixProvider extends CommonQuickfixProvider {
 
 	@Inject DeviceFactoryGenerator factoryGenerator
 
+	@Fix(DeviceFactoryValidator.SUPERFLUOUS_LIBRARY)
+	def removePackageName(Issue issue, IssueResolutionAcceptor acceptor) {
+		acceptor.accept(issue, 'Remove library statement', 'Remove unused library statement', null) [
+			context |
+			val document = context.xtextDocument
+			//issue.lineNumber is 1-based
+			val issueLineInfo = document.getLineInformation(issue.lineNumber - 1)
+			document.replace(issueLineInfo.offset, issueLineInfo.length, "")
+		]
+	}
+	
+	@Fix(DeviceFactoryValidator.UNSUPPORTED_LANGUAGE)
+	def swapWithSupportedLanguage(Issue issue, IssueResolutionAcceptor acceptor) {
+		for (String language : factoryGenerator.supportedLanguages) {
+			acceptor.accept(issue, '''Change language to «language»''', '''Change language to «language»''', null) [
+				element, context |
+				(element as Language).name = language
+			]
+		}
+	}
+
 	@Fix(DeviceFactoryValidator.INHERITANCE_CYCLE)
 	def removeInheritance(Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(issue, 'Convert to base device', 'Remove the inheritance and convert to a base device', null) [
@@ -35,15 +56,5 @@ class DeviceFactoryQuickfixProvider extends CommonQuickfixProvider {
 			
 			document.replace(issue.offset - beginOffset, issue.length + beginOffset, "board ")
 		]
-	}
-	
-	@Fix(DeviceFactoryValidator.UNSUPPORTED_LANGUAGE)
-	def swapWithSupportedLanguage(Issue issue, IssueResolutionAcceptor acceptor) {
-		for (String language : factoryGenerator.supportedLanguages) {
-			acceptor.accept(issue, '''Change language to «language»''', '''Change language to «language»''', null) [
-				element, context |
-				(element as Language).name = language
-			]
-		}
 	}
 }

@@ -5,6 +5,7 @@ package org.iot.devicefactory.validation
 
 import com.google.inject.Inject
 import java.util.HashSet
+import org.eclipse.xtext.naming.IQualifiedNameConverter
 import org.eclipse.xtext.validation.Check
 import org.eclipse.xtext.validation.CheckType
 import org.iot.devicefactory.deviceFactory.ChildDevice
@@ -12,9 +13,13 @@ import org.iot.devicefactory.deviceFactory.Deployment
 import org.iot.devicefactory.deviceFactory.Device
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.deviceFactory.Language
+import org.iot.devicefactory.deviceFactory.Library
+import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage
 import org.iot.devicefactory.generator.DeviceFactoryGenerator
+import org.iot.devicefactory.util.DeviceFactoryUtils
 
 //import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
 
 /**
  * This class contains custom validation rules. 
@@ -28,10 +33,14 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	public static val AMBIGUOUS_FOG = "org.iot.devicefactory.deviceFactory.AMBIGUOUS_FOG"
 	public static val MISSING_CLOUD = "org.iot.devicefactory.deviceFactory.MISSING_CLOUD"
 	public static val AMBIGUOUS_CLOUD = "org.iot.devicefactory.deviceFactory.AMBIGUOUS_CLOUD"
-	public static val INHERITANCE_CYCLE = "org.iot.devicefactory.deviceFactory.INHERITANCE_CYCLE"
+	
+	public static val SUPERFLUOUS_LIBRARY = "org.iot.devicefactory.deviceFactory.SUPERFLUOUS_LIBRARY"
 	public static val UNSUPPORTED_LANGUAGE = "org.iot.devicefactory.deviceFactory.UNSUPPORTED_LANGUAGE"
+	public static val INHERITANCE_CYCLE = "org.iot.devicefactory.deviceFactory.INHERITANCE_CYCLE"
 	
 	@Inject DeviceFactoryGenerator factoryGenerator
+	@Inject extension DeviceFactoryUtils
+	@Inject extension IQualifiedNameConverter 
 	
 	@Check(CheckType.NORMAL)
 	def validateDeployment(Deployment deployment) {
@@ -56,6 +65,33 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 		}
 	}
 	
+	@Check(CheckType.NORMAL)
+	def validateImport(Library library) {
+		val visibleBoards = library.getVisibleDescriptions(DeviceLibraryPackage.Literals.BOARD)
+		val importQualifiedName = library.importedNamespace.toQualifiedName
+		
+		if (! visibleBoards.exists[importQualifiedName.matches(qualifiedName)]) {
+			error(
+				'''No resource found with qualified name «library.importedNamespace»''',
+				Literals.LIBRARY__IMPORTED_NAMESPACE,
+				SUPERFLUOUS_LIBRARY
+			)
+		} else if (importQualifiedName.segmentCount == 1) {
+			warning(
+				'''Unnecessary import of library «library.importedNamespace» has no effect''',
+				Literals.LIBRARY__IMPORTED_NAMESPACE,
+				SUPERFLUOUS_LIBRARY
+			)
+		}
+	}
+	
+	@Check
+	def validateLanguage(Language language) {
+		if (! factoryGenerator.supportedLanguages.contains(language.name)) {
+			error('''Unsupported language «language.name»''', Literals.LANGUAGE__NAME, UNSUPPORTED_LANGUAGE)
+		}
+	}
+	
 	@Check
 	def validateNoInheritanceCycles(ChildDevice device) {
 		val known = new HashSet<Device>()
@@ -71,13 +107,6 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 				ChildDevice: current.parent
 				default: null
 			}
-		}
-	}
-	
-	@Check
-	def validateLanguage(Language language) {
-		if (! factoryGenerator.supportedLanguages.contains(language.name)) {
-			error('''Unsupported language «language.name»''', Literals.LANGUAGE__NAME, UNSUPPORTED_LANGUAGE)
 		}
 	}
 }

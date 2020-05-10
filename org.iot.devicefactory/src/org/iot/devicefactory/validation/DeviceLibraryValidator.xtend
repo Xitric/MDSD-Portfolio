@@ -13,7 +13,7 @@ import org.iot.devicefactory.deviceLibrary.OverrideSensor
 import org.iot.devicefactory.deviceLibrary.Sensor
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import static extension org.iot.devicefactory.util.LibraryUtils.*
+import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
 
 /**
  * This class contains custom validation rules. 
