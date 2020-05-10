@@ -14,13 +14,15 @@ import org.iot.devicefactory.common.StringLiteral
 import org.iot.devicefactory.common.Sub
 import org.iot.devicefactory.common.Tuple
 
+import static org.iot.devicefactory.typing.ExpressionType.*
+
 class ExpressionTypeChecker {
 
 	/**
 	 * Determines if the provided type is either an integer or a double.
 	 */
 	def isNumberType(ExpressionType type) {
-		return type == ExpressionType.INTEGER || type == ExpressionType.DOUBLE
+		return type == DOUBLE
 	}
 
 	/**
@@ -28,12 +30,12 @@ class ExpressionTypeChecker {
 	 */
 	def evaluateNumeralTypes(ExpressionType type1, ExpressionType type2) {
 		if (type1.isNumberType && type2.isNumberType) {
-			if (type1 == ExpressionType.DOUBLE || type2 == ExpressionType.DOUBLE) {
-				return ExpressionType.DOUBLE
+			if (type1 === DOUBLE || type2 === DOUBLE) {
+				return DOUBLE
 			}
 		}
 		
-		ExpressionType.INTEGER
+		INTEGER
 	}
 	
 	/**
@@ -56,7 +58,7 @@ class ExpressionTypeChecker {
 			}
 		}
 		
-		ExpressionType.TUPLE(evaluatedTypes)
+		TUPLE(evaluatedTypes)
 	}
 	
 	/**
@@ -77,26 +79,26 @@ class ExpressionTypeChecker {
 		val value = exp.value
 		switch value {
 			case value.startsWith("0x"):
-				ExpressionType.INTEGER
+				INTEGER
 			case value.contains('.'),
 			case value.contains('e'):
-				ExpressionType.DOUBLE
+				DOUBLE
 			default:
-				ExpressionType.INTEGER
+				INTEGER
 		}
 	}
 
 	def dispatch ExpressionType typeOf(StringLiteral exp) {
-		ExpressionType.STRING
+		STRING
 	}
 
 	def dispatch ExpressionType typeOf(Reference exp) {
 		// TODO: F****** difficult!
-		ExpressionType.INTEGER
+		INTEGER
 	}
 
 	def dispatch ExpressionType typeOf(Tuple exp) {
-		ExpressionType.TUPLE(exp.values.map[typeOf])
+		TUPLE(exp.values.map[typeOf])
 	}
 
 	def dispatch ExpressionType typeOf(Parentheses exp) {
@@ -104,14 +106,14 @@ class ExpressionTypeChecker {
 	}
 
 	def dispatch ExpressionType typeOf(Exponent exp) {
-		ExpressionType.DOUBLE
+		DOUBLE
 	}
 
 	def dispatch ExpressionType typeOf(Negation exp) {
-		if (exp.value.typeOf == ExpressionType.DOUBLE) {
-			ExpressionType.DOUBLE
+		if (exp.value.typeOf == DOUBLE) {
+			DOUBLE
 		} else {
-			ExpressionType.INTEGER
+			INTEGER
 		}
 	}
 
@@ -124,8 +126,8 @@ class ExpressionTypeChecker {
 	}
 
 	def dispatch ExpressionType typeOf(Add exp) {
-		if (exp.left.typeOf == ExpressionType.STRING || exp.right.typeOf == ExpressionType.STRING) {
-			ExpressionType.STRING
+		if (exp.left.typeOf == STRING || exp.right.typeOf == STRING) {
+			STRING
 		} else {
 			evaluateNumeralTypes(exp.left.typeOf, exp.right.typeOf)
 		}
@@ -141,11 +143,11 @@ class ExpressionTypeChecker {
 
 	// Handles all remaining types that default to BOOLEAN
 	def dispatch ExpressionType typeOf(Expression exp) {
-		ExpressionType.BOOLEAN
+		BOOLEAN
 	}
 	
 	// Fall back in case of null invocations
 	def dispatch ExpressionType typeOf(Void exp) {
-		ExpressionType.VOID
+		VOID
 	}
 }

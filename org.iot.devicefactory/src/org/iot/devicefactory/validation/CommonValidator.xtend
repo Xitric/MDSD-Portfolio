@@ -42,26 +42,26 @@ class CommonValidator extends AbstractCommonValidator {
 
 	@Inject extension ExpressionTypeChecker
 
-	def dispatch validateType(Expression exp, ExpressionType expected, EStructuralFeature feature) {
+	private def dispatch validateType(Expression exp, ExpressionType expected, EStructuralFeature feature) {
 		val actual = exp.typeOf
 		if (actual != expected) {
 			error('''Expected «expected», got «actual»''', feature)
 		}
 	}
 	
-	def dispatch validateType(Void exp, ExpressionType expected, EStructuralFeature feature) {
+	private def dispatch validateType(Void exp, ExpressionType expected, EStructuralFeature feature) {
 		// Fall back to handle null invocations of extension methods
 		error('''Expected «expected», got nothing''', feature)
 	}
 	
-	def dispatch validateNumber(Expression exp, EStructuralFeature feature) {
+	private def dispatch validateNumber(Expression exp, EStructuralFeature feature) {
 		val actual = exp.typeOf
 		if (!actual.isNumberType) {
 			error('''Expected integer or double, got «actual»''', feature)
 		}
 	}
 	
-	def dispatch validateNumber(Void exp, EStructuralFeature feature) {
+	private def dispatch validateNumber(Void exp, EStructuralFeature feature) {
 		// Fall back to handle null invocations of extension methods
 		error("Expected integer or double, got nothing", feature)
 	}
@@ -170,7 +170,7 @@ class CommonValidator extends AbstractCommonValidator {
 
 	@Check
 	def validateExpression(Not exp) {
-		exp.value.validateType(ExpressionType.BOOLEAN, Literals.NEGATION__VALUE)
+		exp.value.validateType(ExpressionType.BOOLEAN, Literals.NOT__VALUE)
 	}
 
 	@Check

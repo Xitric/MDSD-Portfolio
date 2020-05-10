@@ -34,6 +34,7 @@ Export-Package: org.iot.devicefactory.common.util,
  org.iot.devicefactory.deviceLibrary,
  org.iot.devicefactory.deviceLibrary.util,
  org.iot.devicefactory.util,
+ org.iot.devicefactory.typing,
  org.iot.devicefactory.parser.antlr.lexer,
  org.iot.devicefactory.formatting2
 Import-Package: org.apache.log4j

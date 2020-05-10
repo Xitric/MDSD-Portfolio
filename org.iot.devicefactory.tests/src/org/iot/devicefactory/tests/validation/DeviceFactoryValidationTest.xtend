@@ -25,6 +25,27 @@ class DeviceFactoryValidationTest {
 	@Inject extension ValidationTestHelper
 	@Inject Provider<ResourceSet> resourceSetProvider
 	
+	private def makeRootBoardLibrary() {
+		makeBoardLibrary("")
+	}
+	
+	private def makePackagedBoardLibrary() {
+		makeBoardLibrary("iot.boards")
+	}
+	
+	private def makeBoardLibrary(String pkg) {
+		val resourceSet = resourceSetProvider.get
+		val resourceURI = '''resource/DeviceFactory/src/«pkg.replace(".", "/") + "/"»base_boards.iotc'''
+		
+		val iotc = resourceSet.createResource(URI.createURI(resourceURI))
+		iotc.load(new StringInputStream('''
+		«IF !pkg.empty»package «pkg»«ENDIF»
+		define board esp32
+			sensor barometer i2c(0x6D) as p
+		'''), emptyMap)
+		return resourceSet
+	}
+	
 	@Test def void testDeploymentNoChannel() {
 		val resourceSet = makePackagedBoardLibrary()
 		
@@ -242,6 +263,32 @@ class DeviceFactoryValidationTest {
 		)
 	}
 	
+	@Test def void testLegalLanguage() {
+		'''
+		language python
+		channel endpoint
+		device controller board boards.esp32
+			sensor barometer sample signal
+				data raw_pressure
+					out endpoint
+		'''.parse.assertNoError(DeviceFactoryValidator.UNSUPPORTED_LANGUAGE)
+	}
+	
+	@Test def void testIllegalLanguage() {
+		'''
+		language brainfuck
+		channel endpoint
+		device controller board boards.esp32
+			sensor barometer sample signal
+				data raw_pressure
+					out endpoint
+		'''.parse.assertError(
+			Literals.LANGUAGE,
+			DeviceFactoryValidator.UNSUPPORTED_LANGUAGE,
+			"Unsupported language brainfuck"
+		)
+	}
+	
 	@Test def void testLegalDeployment() {
 		val resourceSet = makePackagedBoardLibrary()
 		
@@ -268,24 +315,5 @@ class DeviceFactoryValidationTest {
 				data new_pressure
 					out filter[true]
 		'''.parse(resourceSet).assertNoErrors
-	}
-	
-	private def makeRootBoardLibrary() {
-		makeBoardLibrary("")
-	}
-	
-	private def makePackagedBoardLibrary() {
-		makeBoardLibrary("iot.boards")
-	}
-	
-	private def makeBoardLibrary(String pkg) {
-		val resourceSet = resourceSetProvider.get
-		val iotc = resourceSet.createResource(URI.createURI('''resource/DeviceFactory/src/«pkg.replace(".", "/") + "/"»base_boards.iotc'''))
-		iotc.load(new StringInputStream('''
-		«IF !pkg.empty»package «pkg»«ENDIF»
-		define board esp32
-			sensor barometer i2c(0x6D) as p
-		'''), emptyMap)
-		return resourceSet
 	}
 }
