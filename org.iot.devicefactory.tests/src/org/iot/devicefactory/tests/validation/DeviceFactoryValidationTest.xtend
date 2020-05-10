@@ -21,8 +21,8 @@ import org.junit.jupiter.api.^extension.ExtendWith
 class DeviceFactoryValidationTest {
 	
 	@Inject extension ParseHelper<Deployment>
-	@Inject Provider<ResourceSet> resourceSetProvider
 	@Inject extension ValidationTestHelper
+	@Inject Provider<ResourceSet> resourceSetProvider
 	
 	@Test def void testDeploymentNoChannel() {
 		val resourceSet = makeBoardLibrary()
@@ -142,16 +142,12 @@ class DeviceFactoryValidationTest {
 			transformation scaled_pressure as t
 				data new_pressure
 					out filter[true]
-		'''.parse(resourceSet).assertError(
-			Literals.DEPLOYMENT,
-			DeviceFactoryValidator.AMBIGUOUS_CLOUD,
-			"There can be at most one cloud"
-		)
+		'''.parse(resourceSet).assertNoErrors
 	}
 	
 	private def makeBoardLibrary() {
 		val resourceSet = resourceSetProvider.get
-		val iotc = resourceSet.createResource(URI.createURI("base_boards.iotc"))
+		val iotc = resourceSet.createResource(URI.createURI("resource.DeviceFactory.src.iot.base_boards.iotc"))
 		iotc.load(new StringInputStream('''
 		package iot
 		define board esp32

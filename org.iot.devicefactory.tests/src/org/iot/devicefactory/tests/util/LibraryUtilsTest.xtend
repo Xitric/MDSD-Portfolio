@@ -20,7 +20,6 @@ class LibraryUtilsTest {
 	
 	@Test def void testParentSensor() {
 		'''
-		package iot
 		define board BoardA
 			sensor a pin(12) as p
 		

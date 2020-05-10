@@ -1,6 +1,9 @@
 package org.iot.devicefactory.tests.validation
 
 import com.google.inject.Inject
+import com.google.inject.Provider
+import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.util.ParseHelper
@@ -18,11 +21,70 @@ class DeviceLibraryValidationTest {
 	
 	@Inject extension ParseHelper<Library>
 	@Inject extension ValidationTestHelper
+	@Inject Provider<ResourceSet> resourceSetProvider
 	
+	@Test def void testIllegalPackageStatement() {
+		'''
+		package iot.boards
+		define board BoardA
+			sensor a pin(12) as p
+		'''.parse(URI.createURI("resource/DeviceFactory/src/base_boards.iotc"), resourceSetProvider.get)
+			.assertError(
+				Literals.LIBRARY,
+				DeviceLibraryValidator.ILLEGAL_PACKAGE,
+				"There cannot be a package declaration in library files located outside a package"
+			)
+	}
+	
+	@Test def void testMissingPackageStatement() {
+		'''
+		define board BoardA
+			sensor a pin(12) as p
+		'''.parse(URI.createURI("resource/DeviceFactory/src/iot/base_boards.iotc"), resourceSetProvider.get)
+			.assertError(
+				Literals.LIBRARY,
+				DeviceLibraryValidator.INCORRECT_PACKAGE,
+				"Incorrect package name, expected iot"
+			)
+	}
+	
+	@Test def void testIncorrectPackageStatement() {
+		'''
+		package ioot
+		define board BoardA
+			sensor a pin(12) as p
+		'''.parse(URI.createURI("resource/DeviceFactory/src/iot/base_boards.iotc"), resourceSetProvider.get)
+			.assertError(
+				Literals.LIBRARY,
+				DeviceLibraryValidator.INCORRECT_PACKAGE,
+				"Incorrect package name, expected iot"
+			)
+	}
+	
+	@Test def void testCorrectPackageStatement() {
+		'''
+		package iot
+		define board BoardA
+			sensor a pin(12) as p
+		'''.parse(URI.createURI("resource/DeviceFactory/src/iot/base_boards.iotc"), resourceSetProvider.get)
+			.assertNoErrors
+	}
+	
+	@Test def void testIncorrectFileLocation() {
+		'''
+		package iot
+		define board BoardA
+			sensor a pin(12) as p
+		'''.parse(URI.createURI("iot/base_boards.iotc"), resourceSetProvider.get)
+			.assertError(
+				Literals.LIBRARY,
+				null,
+				"A board library must be located inside the src folder of an Eclipse project"
+			)
+	}
 
 	@Test def void testDuplicateBoards() {
 		'''
-		package iot
 		define board BoardA
 			sensor a pin(12) as p
 		
@@ -37,7 +99,6 @@ class DeviceLibraryValidationTest {
 	
 	@Test def void testDuplicateBaseSensors() {
 		'''
-		package iot
 		define board BoardA
 			sensor a pin(12) as p
 			sensor a pin(12) as p
@@ -46,7 +107,6 @@ class DeviceLibraryValidationTest {
 	
 	@Test def void testDuplicateMixSensors() {
 		'''
-		package iot
 		define board BoardA
 			sensor a pin(12) as p
 		
@@ -59,7 +119,6 @@ class DeviceLibraryValidationTest {
 	
 	@Test def void testDuplicateOverrideSensors() {
 		'''
-		package iot
 		define board BoardA
 			sensor a pin(12) as p
 		
@@ -81,7 +140,6 @@ class DeviceLibraryValidationTest {
 	
 	@Test def void testMissingOverride() {
 		'''
-		package iot
 		define board BoardA
 			sensor a pin(12) as p
 		
@@ -96,7 +154,6 @@ class DeviceLibraryValidationTest {
 	
 	@Test def void testInvalidOverride() {
 		'''
-		package iot
 		define board BoardA
 			override sensor a
 		'''.parse.assertError(
@@ -108,7 +165,6 @@ class DeviceLibraryValidationTest {
 	
 	@Test def void testInvalidOverrideWithParent() {
 		'''
-		package iot
 		define board BoardA
 			sensor a pin(12) as p
 		
