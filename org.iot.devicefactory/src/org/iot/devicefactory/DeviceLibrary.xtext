@@ -3,7 +3,7 @@ grammar org.iot.devicefactory.DeviceLibrary with org.iot.devicefactory.Common
 generate deviceLibrary "http://www.iot.org/devicefactory/DeviceLibrary"
 
 Library:
-	'package' name=QualifiedName
+	('package' name=QualifiedName)?
 	boards += Board*
 ;
 

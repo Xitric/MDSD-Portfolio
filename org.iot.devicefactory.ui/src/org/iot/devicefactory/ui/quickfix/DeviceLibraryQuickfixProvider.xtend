@@ -8,6 +8,7 @@ import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionAcceptor
 import org.eclipse.xtext.validation.Issue
 import org.iot.devicefactory.deviceLibrary.Board
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryFactory
+import org.iot.devicefactory.deviceLibrary.Library
 import org.iot.devicefactory.deviceLibrary.Sensor
 import org.iot.devicefactory.validation.DeviceLibraryValidator
 
@@ -20,6 +21,26 @@ import static extension org.iot.devicefactory.util.LibraryUtils.*
  * See https://www.eclipse.org/Xtext/documentation/310_eclipse_support.html#quick-fixes
  */
 class DeviceLibraryQuickfixProvider extends CommonQuickfixProvider {
+
+	@Fix(DeviceLibraryValidator.ILLEGAL_PACKAGE)
+	def removePackageName(Issue issue, IssueResolutionAcceptor acceptor) {
+		acceptor.accept(issue, 'Remove package statement', 'Remove incorrect usage of package statement', null) [
+			context |
+			val document = context.xtextDocument
+			//issue.lineNumber is 1-based
+			val issueLineInfo = document.getLineInformation(issue.lineNumber - 1)
+			document.replace(issueLineInfo.offset, issueLineInfo.length, "")
+		]
+	}
+
+	@Fix(DeviceLibraryValidator.INCORRECT_PACKAGE)
+	def changePackageName(Issue issue, IssueResolutionAcceptor acceptor) {
+		val expectedPackage = issue.data.get(0)
+		acceptor.accept(issue, '''Change to '«expectedPackage»' ''', '''Change package name to «expectedPackage» to reflect package structure''', null) [
+			element, context |
+			(element as Library).name = expectedPackage
+		]
+	}
 
 	@Fix(DeviceLibraryValidator.INHERITANCE_CYCLE)
 	def removeInheritance(Issue issue, IssueResolutionAcceptor acceptor) {

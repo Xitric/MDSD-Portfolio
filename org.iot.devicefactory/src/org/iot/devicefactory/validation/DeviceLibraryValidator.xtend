@@ -22,9 +22,29 @@ import static extension org.iot.devicefactory.util.LibraryUtils.*
  */
 class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 	
+	public static val ILLEGAL_PACKAGE = "org.iot.devicefactory.deviceLibrary.ILLEGAL_PACKAGE"
+	public static val INCORRECT_PACKAGE = "org.iot.devicefactory.deviceLibrary.INCORRECT_PACKAGE"
 	public static val INHERITANCE_CYCLE = "org.iot.devicefactory.deviceLibrary.INHERITANCE_CYCLE"
 	public static val DUPLICATE_SENSOR = "org.iot.devicefactory.deviceLibrary.DUPLICATE_SENSOR"
 	public static val NON_OVERRIDING_SENSOR = "org.iot.devicefactory.deviceLibrary.NON_OVERRIDING_SENSOR"
+	
+	@Check
+	def calidatePackage(Library library) {
+		val segments = library.eResource.URI.segments
+		
+		if (segments.get(0) != "resource" || segments.get(2) != "src") {
+			error("A board library must be located inside the src folder of an Eclipse project", Literals.LIBRARY__NAME)
+		} else if(segments.length == 4) {
+			if (library.name !== null) {
+				error("There cannot be a package declaration in library files located outside a package", Literals.LIBRARY__NAME, ILLEGAL_PACKAGE)
+			}
+		} else {
+			val expectedPackage = segments.subList(3, segments.length - 1).join(".")
+			if (library.name != expectedPackage) {
+				error('''Incorrect package name, expected «expectedPackage»''', Literals.LIBRARY__NAME, INCORRECT_PACKAGE, expectedPackage)
+			}
+		}
+	}
 	
 	@Check
 	def validateNoInheritanceCycles(Board board) {
