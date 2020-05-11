@@ -14,6 +14,8 @@ import org.iot.devicefactory.common.StringLiteral
 import org.iot.devicefactory.common.Sub
 import org.iot.devicefactory.common.Tuple
 
+import static extension org.iot.devicefactory.typing.ReferenceTypeProvider.*
+
 import static org.iot.devicefactory.typing.ExpressionType.*
 
 class ExpressionTypeChecker {
@@ -93,8 +95,11 @@ class ExpressionTypeChecker {
 	}
 
 	def dispatch ExpressionType typeOf(Reference exp) {
-		// TODO: F****** difficult!
-		INTEGER
+		if (exp?.variable?.name === null) {
+			return VOID
+		}
+		
+		return exp.typeOf(this)
 	}
 
 	def dispatch ExpressionType typeOf(Tuple exp) {

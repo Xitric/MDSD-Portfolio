@@ -4,7 +4,6 @@ import com.google.inject.Inject
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.IScopeProvider
-import org.iot.devicefactory.common.Pipeline
 import org.junit.Assert
 
 class ScopingTestUtil {
@@ -20,13 +19,5 @@ class ScopingTestUtil {
 			'''Expected scope «b» but was «a»''',
 			(a.forall[b.contains(it)] && a.size === b.size)
 		)
-	}
-	
-	def get(Pipeline pipeline, int index) {
-		var current = pipeline
-		for (var i = 0; i < index; i++) {
-			current = current.next
-		}
-		return current
 	}
 }

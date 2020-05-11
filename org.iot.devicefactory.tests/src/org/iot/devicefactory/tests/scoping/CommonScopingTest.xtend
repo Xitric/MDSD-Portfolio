@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension org.iot.devicefactory.tests.TestUtil.*
 import static extension org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)

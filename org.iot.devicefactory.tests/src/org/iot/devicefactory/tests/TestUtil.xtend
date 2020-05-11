@@ -5,6 +5,7 @@ import com.google.inject.Provider
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.util.StringInputStream
+import org.iot.devicefactory.common.Pipeline
 
 class TestUtil {
 
@@ -37,5 +38,13 @@ class TestUtil {
 					preprocess map[a * a => (b, c)]
 		'''), emptyMap)
 		return resourceSet
+	}
+	
+	static def get(Pipeline pipeline, int index) {
+		var current = pipeline
+		for (var i = 0; i < index; i++) {
+			current = current.next
+		}
+		return current
 	}
 }

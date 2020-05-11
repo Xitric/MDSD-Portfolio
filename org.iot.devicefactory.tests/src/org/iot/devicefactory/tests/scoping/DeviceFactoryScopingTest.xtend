@@ -4,13 +4,15 @@ import com.google.inject.Inject
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.util.ParseHelper
+import org.iot.devicefactory.common.CommonPackage
 import org.iot.devicefactory.deviceFactory.Deployment
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.tests.MultiLanguageInjectorProvider
 import org.iot.devicefactory.tests.TestUtil
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import org.iot.devicefactory.common.CommonPackage
+
+import static extension org.iot.devicefactory.tests.TestUtil.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(MultiLanguageInjectorProvider)

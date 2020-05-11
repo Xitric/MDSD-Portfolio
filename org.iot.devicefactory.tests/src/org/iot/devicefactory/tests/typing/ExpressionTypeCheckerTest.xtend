@@ -157,8 +157,6 @@ class ExpressionTypeCheckerTest {
 		)
 	}
 	
-	//TODO: Test reference type
-	
 	@Test def void testTuple() {
 		assertExpressionType(
 			CommonFactory.eINSTANCE.createTuple => [
