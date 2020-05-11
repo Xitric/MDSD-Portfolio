@@ -9,7 +9,10 @@ import java.util.ArrayList
 class DeviceLibraryUtils {
 
 	static def getAllHierarchySensors(Board board) {
-		board.boardHierarchy.flatMap[sensors]
+		val allSensors = board.boardHierarchy.flatMap[sensors]
+		allSensors.filter [ sensor |
+			!allSensors.takeWhile[it !== sensor].exists[name == sensor.name]
+		]
 	}
 
 	static def getBoardHierarchy(Board board) {
@@ -21,7 +24,7 @@ class DeviceLibraryUtils {
 		}
 		return hierarchy
 	}
-	
+
 	static def getParentSensor(Sensor sensor) {
 		val board = sensor.getContainerOfType(Board)
 		board.parent.allHierarchySensors.findFirst[name == sensor.name]

@@ -40,17 +40,17 @@ class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
 		}
 	}
 	
-	def private IScope getBoardParentScope(EObject context) {
+	private def IScope getBoardParentScope(EObject context) {
 		val library = context.getContainerOfType(Library)
 		Scopes.scopeFor(library.boards.takeWhile[it !== context])
 	}
 	
-	def private IScope getReferenceVariableScope(EObject context) {
+	private def IScope getReferenceVariableScope(EObject context) {
 		val commonScope = commonScopeProvider.getScope(context, CommonPackage.Literals.REFERENCE__VARIABLE)
 		commonScope === IScope.NULLSCOPE ? context.referenceVariableScopeInherited : commonScope
 	}
 	
-	def private IScope getReferenceVariableScopeInherited(EObject context) {
+	private def IScope getReferenceVariableScopeInherited(EObject context) {
 		val sensor = context.getContainerOfType(Sensor)
 		switch sensor {
 			BaseSensor: {

@@ -1,16 +1,37 @@
 package org.iot.devicefactory.util
 
-import com.google.inject.Inject
-import org.eclipse.emf.ecore.EClass
+import java.util.ArrayList
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.naming.QualifiedName
-import org.eclipse.xtext.resource.IContainer
-import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
+import org.iot.devicefactory.deviceFactory.BaseDevice
+import org.iot.devicefactory.deviceFactory.ChildDevice
+import org.iot.devicefactory.deviceFactory.Device
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
 
 class DeviceFactoryUtils {
 	
-	@Inject ResourceDescriptionsProvider resourceDescriptionsProvider
-	@Inject IContainer.Manager containerManager
+	static def getDeviceHierarchy(Device device) {
+		val hierarchy = new ArrayList<Device>()
+		var current = device
+		while (current !== null) {
+			hierarchy.add(current)
+			current = switch current {
+				BaseDevice: null
+				ChildDevice: current.parent
+			}
+		}
+		return hierarchy
+	}
+	
+	static def getBoard(EObject context) {
+		val device = context.getContainerOfType(Device)
+		val top = device.deviceHierarchy.last
+		switch top {
+			BaseDevice: top.board
+			ChildDevice: null
+		}
+	}
 	
 	static def matches(QualifiedName me, QualifiedName other) {
 		val meSkipped = me.lastSegment == "*" ? me.skipLast(1) : me 
@@ -26,22 +47,5 @@ class DeviceFactoryUtils {
 		}
 		
 		return true
-	}
-	
-	// Adapted from:
-	// https://github.com/LorenzoBettini/packtpub-xtext-book-examples/blob/master/org.example.smalljava/src/org/example/smalljava/scoping/SmallJavaIndex.xtend
-	def getVisibleDescriptions(EObject context, EClass type) {
-		context.visibleContainers.map[it.getExportedObjectsByType(type)].flatten
-	}
-	
-	def getVisibleContainers(EObject context) {
-		val resource = context.eResource
-		val descriptions = resourceDescriptionsProvider.getResourceDescriptions(resource)
-		val description = descriptions.getResourceDescription(resource.URI)
-		if (description !== null) {
-			return containerManager.getVisibleContainers(description, descriptions)
-		} else {
-			return emptyList
-		}
 	}
 }

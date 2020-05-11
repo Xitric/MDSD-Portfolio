@@ -16,9 +16,8 @@ import org.iot.devicefactory.deviceFactory.Language
 import org.iot.devicefactory.deviceFactory.Library
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage
 import org.iot.devicefactory.generator.DeviceFactoryGenerator
-import org.iot.devicefactory.util.DeviceFactoryUtils
+import org.iot.devicefactory.util.IndexUtils
 
-//import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
 
 /**
@@ -39,7 +38,7 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	public static val INHERITANCE_CYCLE = "org.iot.devicefactory.deviceFactory.INHERITANCE_CYCLE"
 	
 	@Inject DeviceFactoryGenerator factoryGenerator
-	@Inject extension DeviceFactoryUtils
+	@Inject extension IndexUtils
 	@Inject extension IQualifiedNameConverter 
 	
 	@Check(CheckType.NORMAL)

@@ -5,11 +5,16 @@ import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.util.ParseHelper
 import org.iot.devicefactory.common.CommonPackage
+import org.iot.devicefactory.common.Map
+import org.iot.devicefactory.common.Reference
+import org.iot.devicefactory.deviceLibrary.BaseSensor
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
 import org.iot.devicefactory.deviceLibrary.Library
 import org.iot.devicefactory.tests.DeviceLibraryInjectorProvider
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
+
+import static extension org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(DeviceLibraryInjectorProvider)
@@ -159,6 +164,32 @@ class DeviceLibraryScopingTest {
 			get(2).preprocess.pipeline.assertScope(
 				CommonPackage.Literals.REFERENCE__VARIABLE,
 				#["k", "l", "m"]
+			)
+		]
+	}
+	
+	@Test def void testParentSensorScopeReferences() {
+		'''
+		define board BoardA
+			sensor a pin(12) as p
+				preprocess map[p => p]
+		
+		define board BoardB includes BoardA
+			override sensor a
+				preprocess map[p => p]
+		
+		define board BoardC includes BoardB
+			override sensor a
+				preprocess map[p => p]
+		'''.parse.boards => [
+			((get(0).sensors.get(0).preprocess.pipeline as Map).expression as Reference).variable.assertSame(
+				(get(0).sensors.get(0) as BaseSensor).input.variables
+			)
+			((get(1).sensors.get(0).preprocess.pipeline as Map).expression as Reference).variable.assertSame(
+				(get(0).sensors.get(0).preprocess.pipeline as Map).output
+			)
+			((get(2).sensors.get(0).preprocess.pipeline as Map).expression as Reference).variable.assertSame(
+				(get(1).sensors.get(0).preprocess.pipeline as Map).output
 			)
 		]
 	}

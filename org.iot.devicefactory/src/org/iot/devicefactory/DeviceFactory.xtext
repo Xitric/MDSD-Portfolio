@@ -51,11 +51,11 @@ Sensor:
 ;
 
 BaseSensor:
-	'sensor' name=[Library::Sensor] sampler=Sampler
+	'sensor' definition=[Library::Sensor] sampler=Sampler
 ;
 
 OverrideSensor:
-	'override' 'sensor' name=[Sensor] (sampler=Sampler)?
+	'override' 'sensor' definition=[Library::Sensor] (sampler=Sampler)?
 ;
 
 SensorData:

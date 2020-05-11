@@ -1,21 +1,18 @@
 package org.iot.devicefactory.tests.validation
 
 import com.google.inject.Inject
-import com.google.inject.Provider
-import org.eclipse.emf.common.util.URI
-import org.eclipse.emf.ecore.resource.ResourceSet
+import org.eclipse.xtext.diagnostics.Diagnostic
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.util.ParseHelper
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import org.eclipse.xtext.util.StringInputStream
 import org.iot.devicefactory.deviceFactory.Deployment
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.tests.MultiLanguageInjectorProvider
+import org.iot.devicefactory.tests.TestUtil
 import org.iot.devicefactory.validation.DeviceFactoryValidator
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import org.eclipse.xtext.diagnostics.Diagnostic
 
 @ExtendWith(InjectionExtension)
 @InjectWith(MultiLanguageInjectorProvider)
@@ -23,28 +20,7 @@ class DeviceFactoryValidationTest {
 	
 	@Inject extension ParseHelper<Deployment>
 	@Inject extension ValidationTestHelper
-	@Inject Provider<ResourceSet> resourceSetProvider
-	
-	private def makeRootBoardLibrary() {
-		makeBoardLibrary("")
-	}
-	
-	private def makePackagedBoardLibrary() {
-		makeBoardLibrary("iot.boards")
-	}
-	
-	private def makeBoardLibrary(String pkg) {
-		val resourceSet = resourceSetProvider.get
-		val resourceURI = '''resource/DeviceFactory/src/«pkg.replace(".", "/") + "/"»base_boards.iotc'''
-		
-		val iotc = resourceSet.createResource(URI.createURI(resourceURI))
-		iotc.load(new StringInputStream('''
-		«IF !pkg.empty»package «pkg»«ENDIF»
-		define board esp32
-			sensor barometer i2c(0x6D) as p
-		'''), emptyMap)
-		return resourceSet
-	}
+	@Inject extension TestUtil
 	
 	@Test def void testDeploymentNoChannel() {
 		val resourceSet = makePackagedBoardLibrary()

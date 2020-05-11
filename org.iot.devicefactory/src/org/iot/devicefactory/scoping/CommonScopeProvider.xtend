@@ -31,7 +31,7 @@ class CommonScopeProvider extends AbstractCommonScopeProvider {
 		}
 	}
 	
-	def private IScope getReferenceVariableScope(EObject context) {
+	private def IScope getReferenceVariableScope(EObject context) {
 		val map = context.getContainerOfType(Pipeline)?.eContainer()?.getContainerOfType(Map)
 		map === null ? IScope.NULLSCOPE : Scopes.scopeFor(map.output.variables)
 	}
