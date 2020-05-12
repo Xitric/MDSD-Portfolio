@@ -35,7 +35,7 @@ class TestUtil {
 			
 			define board esp32_azure_v2 includes esp32_azure
 				sensor thermistor pin(12) as a
-					preprocess map[a * a => (b, c)]
+					preprocess map[(a * a, a) => (b, c)]
 		'''), emptyMap)
 		return resourceSet
 	}

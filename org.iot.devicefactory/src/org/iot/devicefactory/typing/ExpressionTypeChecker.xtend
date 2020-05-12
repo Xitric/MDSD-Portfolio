@@ -5,17 +5,20 @@ import org.iot.devicefactory.common.Conditional
 import org.iot.devicefactory.common.Div
 import org.iot.devicefactory.common.Exponent
 import org.iot.devicefactory.common.Expression
+import org.iot.devicefactory.common.Map
 import org.iot.devicefactory.common.Mul
 import org.iot.devicefactory.common.Negation
 import org.iot.devicefactory.common.NumberLiteral
+import org.iot.devicefactory.common.Pipeline
 import org.iot.devicefactory.common.Reference
 import org.iot.devicefactory.common.StringLiteral
 import org.iot.devicefactory.common.Sub
 import org.iot.devicefactory.common.Tuple
-
-import static extension org.iot.devicefactory.typing.ReferenceTypeProvider.*
+import org.iot.devicefactory.common.Window
 
 import static org.iot.devicefactory.typing.ExpressionType.*
+
+import static extension org.iot.devicefactory.typing.ReferenceTypeProvider.*
 
 class ExpressionTypeChecker {
 
@@ -144,6 +147,24 @@ class ExpressionTypeChecker {
 	// Handles all remaining types that default to BOOLEAN
 	def dispatch ExpressionType typeOf(Expression exp) {
 		BOOLEAN
+	}
+	
+	def typeOfPipeline(Pipeline pipeline) {
+		var Pipeline lastTypeChanger = null
+		
+		var next = pipeline
+		while (next !== null) {
+			switch next {
+				Map, Window: lastTypeChanger = next
+			}
+			next = pipeline.next
+		}
+		
+		switch lastTypeChanger {
+			Map: lastTypeChanger.expression.typeOf
+			Window: DOUBLE
+			default: VOID
+		}
 	}
 	
 	// Fall back in case of null invocations

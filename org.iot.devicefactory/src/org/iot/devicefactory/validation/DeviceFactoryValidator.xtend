@@ -9,15 +9,19 @@ import org.eclipse.xtext.naming.IQualifiedNameConverter
 import org.eclipse.xtext.validation.Check
 import org.eclipse.xtext.validation.CheckType
 import org.iot.devicefactory.deviceFactory.ChildDevice
+import org.iot.devicefactory.deviceFactory.Data
 import org.iot.devicefactory.deviceFactory.Deployment
 import org.iot.devicefactory.deviceFactory.Device
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.deviceFactory.Language
 import org.iot.devicefactory.deviceFactory.Library
+import org.iot.devicefactory.deviceFactory.SensorDataOut
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage
 import org.iot.devicefactory.generator.DeviceFactoryGenerator
+import org.iot.devicefactory.typing.DeviceFactoryTypeChecker
 import org.iot.devicefactory.util.IndexUtils
 
+import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
 
 /**
@@ -36,10 +40,12 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	public static val SUPERFLUOUS_LIBRARY = "org.iot.devicefactory.deviceFactory.SUPERFLUOUS_LIBRARY"
 	public static val UNSUPPORTED_LANGUAGE = "org.iot.devicefactory.deviceFactory.UNSUPPORTED_LANGUAGE"
 	public static val INHERITANCE_CYCLE = "org.iot.devicefactory.deviceFactory.INHERITANCE_CYCLE"
+	public static val INCORRECT_OUT_TYPE = "org.iot.devicefactory.deviceFactory.INCORRECT_OUT_TYPE"
 	
 	@Inject DeviceFactoryGenerator factoryGenerator
 	@Inject extension IndexUtils
 	@Inject extension IQualifiedNameConverter 
+	@Inject extension DeviceFactoryTypeChecker
 	
 	@Check(CheckType.NORMAL)
 	def validateDeployment(Deployment deployment) {
@@ -106,6 +112,20 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 				ChildDevice: current.parent
 				default: null
 			}
+		}
+	}
+	
+	@Check
+	def validateOutTypes(SensorDataOut output) {
+		val expectedType = output.getContainerOfType(Data).typeOf
+		val actualType = output.typeOf
+		
+		if (actualType != expectedType) {
+			error(
+				'''Incorrect output type from data pipeline. Expected «expectedType», got «actualType»''',
+				Literals.SENSOR_DATA_OUT__PIPELINE,
+				INCORRECT_OUT_TYPE
+			)
 		}
 	}
 }
