@@ -91,30 +91,11 @@ Not returns Expression:
 ;
 
 Primary returns Expression:
-	Parentheses | Tuple | NumberLiteral | BooleanLiteral | Reference | StringLiteral
-	// Used together with rewrite rule for parentheses below
-	//Parentheses | NumberLiteral | BooleanLiteral | Reference | StringLiteral
+	Parentheses | NumberLiteral | BooleanLiteral | Reference | StringLiteral
 ;
 
-Parentheses:
-	'(' expression = Expression ')'
-;
-
-// Parentheses + rewrite rule for tuples, issues with metamodel
-// First element in resulting tuple is the original parentheses element - this is not how it is supposed to look
-//Parentheses:
-//	'(' expression = Expression ({Tuple.values += current} (',' values += Expression)+)? ')'
-//;
-
-// Requires at least one comma. Issues with ambiguity, thus commented out
-//Tuple:
-//	'(' values+=Expression (',' values+=Expression)+ ')'
-//;
-
-// Prefixed tuple to solve ambiguity for now
-// No luck with syntactic predicates, and backtracking makes everything weird
-Tuple:
-	'#(' values+=Expression (',' values+=Expression)+ ')'
+Parentheses returns Expression:
+	'(' Expression ({Tuple.values += current} (',' values += Expression)+)? ')'
 ;
 
 Reference:

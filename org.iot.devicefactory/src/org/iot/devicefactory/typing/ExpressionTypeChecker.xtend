@@ -8,7 +8,6 @@ import org.iot.devicefactory.common.Expression
 import org.iot.devicefactory.common.Mul
 import org.iot.devicefactory.common.Negation
 import org.iot.devicefactory.common.NumberLiteral
-import org.iot.devicefactory.common.Parentheses
 import org.iot.devicefactory.common.Reference
 import org.iot.devicefactory.common.StringLiteral
 import org.iot.devicefactory.common.Sub
@@ -104,10 +103,6 @@ class ExpressionTypeChecker {
 
 	def dispatch ExpressionType typeOf(Tuple exp) {
 		TUPLE(exp.values.map[typeOf])
-	}
-
-	def dispatch ExpressionType typeOf(Parentheses exp) {
-		exp.expression.typeOf
 	}
 
 	def dispatch ExpressionType typeOf(Exponent exp) {

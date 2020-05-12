@@ -27,7 +27,6 @@ import org.iot.devicefactory.common.Negation
 import org.iot.devicefactory.common.Not
 import org.iot.devicefactory.common.NumberLiteral
 import org.iot.devicefactory.common.Or
-import org.iot.devicefactory.common.Parentheses
 import org.iot.devicefactory.common.StringLiteral
 import org.iot.devicefactory.common.Sub
 import org.iot.devicefactory.common.Tuple
@@ -66,6 +65,7 @@ class CommonFormatter extends AbstractFormatter2 {
 	} 
 
 	def dispatch void format(Conditional conditional, extension IFormattableDocument document) {
+		conditional.formatParentheses(document)
 		conditional.condition.format
 		conditional.first.format
 		conditional.second.format
@@ -75,94 +75,106 @@ class CommonFormatter extends AbstractFormatter2 {
 	}
 
 	def dispatch void format(Or or, extension IFormattableDocument document) {
+		or.formatParentheses(document)
 		or.regionFor.keyword("||").surround[oneSpace]
 		or.left.format
 		or.right.format
 	}
 
 	def dispatch void format(And and, extension IFormattableDocument document) {
+		and.formatParentheses(document)
 		and.regionFor.keyword("&&").surround[oneSpace]
 		and.left.format
 		and.right.format
 	}
 
 	def dispatch void format(Equal equal, extension IFormattableDocument document) {
+		equal.formatParentheses(document)
 		equal.regionFor.keyword("==").surround[oneSpace]
 		equal.left.format
 		equal.right.format
 	}
 
 	def dispatch void format(Unequal unequal, extension IFormattableDocument document) {
+		unequal.formatParentheses(document)
 		unequal.regionFor.keyword("!=").surround[oneSpace]
 		unequal.left.format
 		unequal.right.format
 	}
 
 	def dispatch void format(LessThan lessThan, extension IFormattableDocument document) {
+		lessThan.formatParentheses(document)
 		lessThan.regionFor.keyword("<").surround[oneSpace]
 		lessThan.left.format
 		lessThan.right.format
 	}
 
 	def dispatch void format(LessThanEqual lessThanEqual, extension IFormattableDocument document) {
+		lessThanEqual.formatParentheses(document)
 		lessThanEqual.regionFor.keyword("<=").surround[oneSpace]
 		lessThanEqual.left.format
 		lessThanEqual.right.format
 	}
 
 	def dispatch void format(GreaterThan greaterThan, extension IFormattableDocument document) {
+		greaterThan.formatParentheses(document)
 		greaterThan.regionFor.keyword(">").surround[oneSpace]
 		greaterThan.left.format
 		greaterThan.right.format
 	}
 
 	def dispatch void format(GreaterThanEqual greaterThanEqual, extension IFormattableDocument document) {
+		greaterThanEqual.formatParentheses(document)
 		greaterThanEqual.regionFor.keyword(">=").surround[oneSpace]
 		greaterThanEqual.left.format
 		greaterThanEqual.right.format
 	}
 
 	def dispatch void format(Add add, extension IFormattableDocument document) {
+		add.formatParentheses(document)
 		add.regionFor.keyword("+").surround[oneSpace]
 		add.left.format
 		add.right.format
 	}
 
 	def dispatch void format(Sub sub, extension IFormattableDocument document) {
+		sub.formatParentheses(document)
 		sub.regionFor.keyword("-").surround[oneSpace]
 		sub.left.format
 		sub.right.format
 	}
 
 	def dispatch void format(Mul mul, extension IFormattableDocument document) {
+		mul.formatParentheses(document)
 		mul.regionFor.keyword("*").surround[oneSpace]
 		mul.left.format
 		mul.right.format
 	}
 
 	def dispatch void format(Div div, extension IFormattableDocument document) {
+		div.formatParentheses(document)
 		div.regionFor.keyword("/").surround[oneSpace]
 		div.left.format
 		div.right.format
 	}
 
 	def dispatch void format(Negation negation, extension IFormattableDocument document) {
+		negation.formatParentheses(document)
 		negation.regionFor.keyword("-").append[noSpace]
 		negation.value.format
 	}
 
 	def dispatch void format(Exponent exponent, extension IFormattableDocument document) {
+		exponent.formatParentheses(document)
 		exponent.regionFor.keyword("**").surround[oneSpace]
+		exponent.base.format
+		exponent.power.format
 	}
 
 	def dispatch void format(Not not, extension IFormattableDocument document) {
+		not.formatParentheses(document)
 		not.regionFor.keyword("!").append[noSpace]
 		not.value.format
-	}
-
-	def dispatch void format(Parentheses parentheses, extension IFormattableDocument document) {
-		parentheses.formatParentheses(document)
-		parentheses.expression.format
 	}
 
 	def dispatch void format(Tuple tuple, extension IFormattableDocument document) {
@@ -172,13 +184,19 @@ class CommonFormatter extends AbstractFormatter2 {
 	}
 	
 	private def formatParentheses(EObject obj, extension IFormattableDocument document) {
-		obj.regionFor.keyword("(").immediatelyFollowing.keyword("[").prepend[noSpace]
-		obj.regionFor.keyword("(").immediatelyFollowing.keyword("(").prepend[noSpace]
-		obj.regionFor.keyword("(").append[noSpace]
+		val leftRegion = obj.regionFor.keyword("(")
+		if (leftRegion !== null) {
+			leftRegion.immediatelyFollowing.keyword("[").prepend[noSpace]
+			leftRegion.immediatelyFollowing.keyword("(").prepend[noSpace]
+			leftRegion.append[noSpace]
+		}
 		
-		obj.regionFor.keyword(")").immediatelyPreceding.keyword("]").prepend[noSpace]
-		obj.regionFor.keyword(")").immediatelyPreceding.keyword(")").prepend[noSpace]
-		obj.regionFor.keyword(")").prepend[noSpace]
+		val rightRegion = obj.regionFor.keyword(")")
+		if (rightRegion !== null) {
+			rightRegion.immediatelyPreceding.keyword("]").append[noSpace]
+			rightRegion.immediatelyPreceding.keyword(")").append[noSpace]
+			rightRegion.prepend[noSpace]
+		}
 	}
 	
 	def dispatch void format(Variables variables, extension IFormattableDocument document) {
@@ -189,6 +207,8 @@ class CommonFormatter extends AbstractFormatter2 {
 	
 	// Formatter never seemed to hit literals, so I catch them like this
 	def dispatch void format(Expression expression, extension IFormattableDocument document) {
+		expression.formatParentheses(document)
+		
 		switch expression {
 			StringLiteral: {
 				//TODO: Can we make this work?

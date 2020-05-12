@@ -71,7 +71,7 @@ class ReferenceTypeCommonTest {
 	
 	@Test def void testReferenceTuple() {
 		'''
-		map[#(1, 1.2, "", true) => (a, b, c, d)].filter[a].filter[b].filter[c].filter[d]
+		map[(1, 1.2, "", true) => (a, b, c, d)].filter[a].filter[b].filter[c].filter[d]
 		'''.parse => [
 			(get(1) as Filter).expression.typeOf.assertSame(INTEGER)
 			(get(2) as Filter).expression.typeOf.assertSame(DOUBLE)
@@ -101,7 +101,7 @@ class ReferenceTypeCommonTest {
 	
 	@Test def void testReferenceTupleRedefined() {
 		'''
-		map[#(1, "") => (a, b)].map[b => a].filter[b + a].filter[a].filter[b]
+		map[(1, "") => (a, b)].map[b => a].filter[b + a].filter[a].filter[b]
 		'''.parse => [
 			(get(1) as Map).expression.typeOf.assertSame(STRING)
 			((get(2) as Filter).expression as Add).left.typeOf.assertSame(VOID)

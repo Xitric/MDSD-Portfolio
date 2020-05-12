@@ -48,7 +48,7 @@ class CommonValidationTest {
 		)
 		
 		'''
-		map[true ? #("", 5) : #(false, 5.6, "") => a]
+		map[true ? ("", 5) : (false, 5.6, "") => a]
 		'''.parse.assertError(
 			Literals.CONDITIONAL,
 			null,
@@ -56,7 +56,7 @@ class CommonValidationTest {
 		)
 		
 		'''
-		map[true ? #("", 5) : #(false, 5.6, "") => a]
+		map[true ? ("", 5) : (false, 5.6, "") => a]
 		'''.parse.assertError(
 			Literals.CONDITIONAL,
 			null,
@@ -108,7 +108,7 @@ class CommonValidationTest {
 		'''.parse.assertNoErrors
 		
 		'''
-		filter[#(5, "", false) != #(8e-2, "", true)]
+		filter[(5, "", false) != (8e-2, "", true)]
 		'''.parse.assertNoErrors
 		
 		'''
@@ -156,7 +156,7 @@ class CommonValidationTest {
 		'''.parse.assertNoErrors
 		
 		'''
-		map["" + #(5, false) => a]
+		map["" + (5, false) => a]
 		'''.parse.assertNoErrors
 		
 		'''
@@ -220,11 +220,11 @@ class CommonValidationTest {
 	
 	@Test def void testTuple() {
 		'''
-		map[#(5, "", false) => a]
+		map[(5, "", false) => a]
 		'''.parse.assertNoErrors
 		
 		'''
-		map[#(5, #(0x3, ""), false) => a]
+		map[(5, (0x3, ""), false) => a]
 		'''.parse.assertError(
 			Literals.TUPLE,
 			null,

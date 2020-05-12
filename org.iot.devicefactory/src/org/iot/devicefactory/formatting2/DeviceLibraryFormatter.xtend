@@ -16,10 +16,15 @@ import org.iot.devicefactory.deviceLibrary.OverrideSensor
 import org.iot.devicefactory.deviceLibrary.Pin
 import org.iot.devicefactory.deviceLibrary.Preprocess
 import org.iot.devicefactory.deviceLibrary.SensorInput
+import org.iot.devicefactory.deviceLibrary.Sensor
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
 
 class DeviceLibraryFormatter extends CommonFormatter {
 
 	def dispatch void format(Library library, extension IFormattableDocument document) {
+		library.regionFor.keyword("package").prepend[noSpace].append[oneSpace]
+		library.regionFor.feature(Literals.LIBRARY__NAME).prepend[oneSpace].append[setNewLines(2)]
 		library.boards.forEach[format]
 	}
 
@@ -38,31 +43,36 @@ class DeviceLibraryFormatter extends CommonFormatter {
 	}
 	
 	def dispatch void format(BaseSensor baseSensor, extension IFormattableDocument document) {
-		baseSensor.regionFor.keyword("sensor").append[oneSpace]
+		baseSensor.formatSensor(document)
 		baseSensor.input.format
 		
 		if (baseSensor.preprocess !== null) {
 			baseSensor.input.append[newLine]
-			
-			baseSensor.interior[indent]
-			baseSensor.preprocess.format
 		}
-		
-		baseSensor.append[setNewLines(2, 2, 2)]
 	}
 	
 	def dispatch void format(OverrideSensor overrideSensor, extension IFormattableDocument document) {
+		overrideSensor.formatSensor(document)
 		overrideSensor.regionFor.keyword("override").append[oneSpace]
-		overrideSensor.regionFor.keyword("sensor").append[oneSpace]
 		
 		if (overrideSensor.preprocess !== null) {
 			overrideSensor.regionFor.feature(Literals.SENSOR__NAME).append[newLine]
-			
-			overrideSensor.interior[indent]
-			overrideSensor.preprocess.format
+		}
+	}
+	
+	private def formatSensor(Sensor sensor, extension IFormattableDocument document) {
+		sensor.regionFor.keyword("sensor").append[oneSpace]
+		
+		if (sensor.preprocess !== null) {
+			sensor.interior[indent]
+			sensor.preprocess.format
 		}
 		
-		overrideSensor.append[setNewLines(2, 2, 2)]
+		if (sensor.getContainerOfType(Library).boards.last.sensors.last === sensor) {
+			sensor.append[setNewLines(1)]
+		} else {
+			sensor.append[setNewLines(2)]
+		}
 	}
 	
 	def dispatch void format(Pin pin, extension IFormattableDocument document) {

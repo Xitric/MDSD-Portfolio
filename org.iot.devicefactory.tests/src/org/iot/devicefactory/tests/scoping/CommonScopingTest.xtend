@@ -37,7 +37,7 @@ class CommonScopingTest {
 	
 	@Test def void testTupleScope() {
 		'''
-		map[#(0, 0) => (k, l)].filter[true]
+		map[(0, 0) => (k, l)].filter[true]
 		'''.parse => [
 			get(1).assertScope(
 				Literals.REFERENCE__VARIABLE,
@@ -48,7 +48,7 @@ class CommonScopingTest {
 	
 	@Test def void testFilterScopeUnchanged() {
 		'''
-		map[#(0, 0) => (k, l)].filter[true].filter[true]
+		map[(0, 0) => (k, l)].filter[true].filter[true]
 		'''.parse => [
 			get(1).assertScope(
 				Literals.REFERENCE__VARIABLE,
@@ -63,7 +63,7 @@ class CommonScopingTest {
 	
 	@Test def void testMapScope() {
 		'''
-		map[#(0, 0) => (k, l)].filter[true].map[k + l => m].filter[true]
+		map[(0, 0) => (k, l)].filter[true].map[k + l => m].filter[true]
 		'''.parse => [
 			get(1).assertScope(
 				Literals.REFERENCE__VARIABLE,
@@ -78,7 +78,7 @@ class CommonScopingTest {
 	
 	@Test def void testWindowScopeUnchanged() {
 		'''
-		map[#(0, 0) => (k, l)].window[10].mean.filter[true]
+		map[(0, 0) => (k, l)].window[10].mean.filter[true]
 		'''.parse => [
 			get(2).assertScope(
 				Literals.REFERENCE__VARIABLE,

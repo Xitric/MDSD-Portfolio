@@ -166,15 +166,6 @@ class ExpressionTypeCheckerTest {
 		)
 	}
 	
-	@Test def void testParentheses() {
-		assertExpressionType(
-			CommonFactory.eINSTANCE.createParentheses => [
-				expression = makeString
-			],
-			STRING
-		)
-	}
-	
 	@Test def void testExponent() {
 		assertExpressionType(
 			CommonFactory.eINSTANCE.createExponent => [
