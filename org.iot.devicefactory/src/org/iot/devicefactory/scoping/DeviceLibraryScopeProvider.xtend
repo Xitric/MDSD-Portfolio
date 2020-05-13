@@ -3,16 +3,13 @@
  */
 package org.iot.devicefactory.scoping
 
-import com.google.inject.Inject
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.iot.devicefactory.common.CommonPackage
-import org.iot.devicefactory.deviceLibrary.BaseSensor
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
 import org.iot.devicefactory.deviceLibrary.Library
-import org.iot.devicefactory.deviceLibrary.OverrideSensor
 import org.iot.devicefactory.deviceLibrary.Sensor
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
@@ -26,8 +23,6 @@ import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
  * on how and when to use it.
  */
 class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
-	
-	@Inject CommonScopeProvider commonScopeProvider
 	
 	override getScope(EObject context, EReference reference) {
 		switch reference {
@@ -46,35 +41,12 @@ class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
 	}
 	
 	private def IScope getReferenceVariableScope(EObject context) {
-		val commonScope = commonScopeProvider.getScope(context, CommonPackage.Literals.REFERENCE__VARIABLE)
-		commonScope === IScope.NULLSCOPE ? context.referenceVariableScopeInherited : commonScope
-	}
-	
-	private def IScope getReferenceVariableScopeInherited(EObject context) {
-		val sensor = context.getContainerOfType(Sensor)
-		switch sensor {
-			BaseSensor: {
-				val varDecl = sensor.input?.variables
-				return varDecl === null ? IScope.NULLSCOPE : Scopes.scopeFor(varDecl.variables)
-			}
-			OverrideSensor: {
-				val parentSensor = sensor.parentSensor
-				if (parentSensor === null) {
-					return IScope.NULLSCOPE
-				}
-				
-				val parentPreprocess = parentSensor.preprocess
-				if (parentPreprocess !== null) {
-					val parentOutVariables = parentPreprocess.pipeline.variables
-					if (! parentOutVariables.empty) {
-						return Scopes.scopeFor(parentOutVariables)
-					}
-				}
-				
-				return parentSensor.referenceVariableScope
-			}
+		val expressionScope = context.variables
+		if (expressionScope.empty) {
+			val sensor = context.getContainerOfType(Sensor)
+			Scopes.scopeFor(sensor.internalVariables)
+		} else {
+			Scopes.scopeFor(expressionScope)
 		}
-		
-		return IScope.NULLSCOPE
 	}
 }

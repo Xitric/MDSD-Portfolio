@@ -18,7 +18,6 @@ import org.iot.devicefactory.deviceFactory.Library
 import org.iot.devicefactory.deviceFactory.OverrideSensor
 import org.iot.devicefactory.deviceFactory.Sensor
 import org.iot.devicefactory.deviceFactory.SensorDataOut
-import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage
 import org.iot.devicefactory.generator.DeviceFactoryGenerator
 import org.iot.devicefactory.typing.DeviceFactoryTypeChecker
 import org.iot.devicefactory.util.IndexUtils
@@ -27,6 +26,7 @@ import static org.iot.devicefactory.validation.DeviceFactoryIssueCodes.*
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
+import static extension org.iot.devicefactory.util.QualifiedNameUtils.*
 
 /**
  * This class contains custom validation rules. 
@@ -34,8 +34,6 @@ import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
-	
-	//TODO: Better utilities for navigating EMF model - good for generator, and can be explained in the report 
 	
 	@Inject DeviceFactoryGenerator factoryGenerator
 	@Inject extension IndexUtils
@@ -67,7 +65,7 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	
 	@Check(CheckType.NORMAL)
 	def validateImport(Library library) {
-		val visibleBoards = library.getVisibleDescriptions(DeviceLibraryPackage.Literals.BOARD)
+		val visibleBoards = library.visibleBoards
 		val importQualifiedName = library.importedNamespace.toQualifiedName
 		
 		if (! visibleBoards.exists[importQualifiedName.matches(qualifiedName)]) {

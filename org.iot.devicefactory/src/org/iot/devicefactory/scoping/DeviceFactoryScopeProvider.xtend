@@ -3,19 +3,19 @@
  */
 package org.iot.devicefactory.scoping
 
-import com.google.inject.Inject
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.iot.devicefactory.common.CommonPackage
+import org.iot.devicefactory.deviceFactory.Device
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.deviceFactory.Sensor
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension org.iot.devicefactory.util.CommonUtils.*
 import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
 import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
-import static extension org.iot.devicefactory.util.CommonUtils.*
 
 /**
  * This class contains custom scoping description.
@@ -24,9 +24,6 @@ import static extension org.iot.devicefactory.util.CommonUtils.*
  * on how and when to use it.
  */
 class DeviceFactoryScopeProvider extends AbstractDeviceFactoryScopeProvider {
-	
-	@Inject CommonScopeProvider commonScopeProvider
-	@Inject DeviceLibraryScopeProvider libraryScopeProvider
 	
 	override getScope(EObject context, EReference reference) {
 		switch reference {
@@ -40,7 +37,7 @@ class DeviceFactoryScopeProvider extends AbstractDeviceFactoryScopeProvider {
 	}
 	
 	private def IScope getSensorNameScope(EObject context) {
-		val board = context.board
+		val board = context.getContainerOfType(Device).board
 		if (board === null) {
 			IScope.NULLSCOPE
 		} else {
@@ -49,21 +46,12 @@ class DeviceFactoryScopeProvider extends AbstractDeviceFactoryScopeProvider {
 	}
 	
 	private def IScope getReferenceVariableScope(EObject context) {
-		val commonScope = commonScopeProvider.getScope(context, CommonPackage.Literals.REFERENCE__VARIABLE)
-		commonScope === IScope.NULLSCOPE ? context.referenceVariableScopeInherited : commonScope
-	}
-	
-	private def IScope getReferenceVariableScopeInherited(EObject context) {
-		val sensor = context.getContainerOfType(Sensor)
-		if (sensor === null) {
-			IScope.NULLSCOPE
+		val expressionScope = context.variables
+		if (expressionScope.empty) {
+			val sensor = context.getContainerOfType(Sensor)
+			Scopes.scopeFor(sensor.variables)
 		} else {
-			val preprocessVars = sensor.definition.preprocess?.pipeline?.variables
-			if (preprocessVars === null || preprocessVars.empty) {
-				libraryScopeProvider.getScope(sensor.definition, CommonPackage.Literals.REFERENCE__VARIABLE)
-			} else {
-				Scopes.scopeFor(preprocessVars)
-			}
+			Scopes.scopeFor(expressionScope)
 		}
 	}
 }

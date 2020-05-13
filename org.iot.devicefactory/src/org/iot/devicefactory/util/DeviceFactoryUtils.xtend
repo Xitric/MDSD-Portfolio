@@ -1,8 +1,7 @@
 package org.iot.devicefactory.util
 
 import java.util.ArrayList
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.xtext.naming.QualifiedName
+import org.iot.devicefactory.common.Variable
 import org.iot.devicefactory.deviceFactory.BaseDevice
 import org.iot.devicefactory.deviceFactory.ChildDevice
 import org.iot.devicefactory.deviceFactory.Data
@@ -10,9 +9,10 @@ import org.iot.devicefactory.deviceFactory.Device
 import org.iot.devicefactory.deviceFactory.Sensor
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
 
 class DeviceFactoryUtils {
-
+	
 	static def getDeviceHierarchy(Device device) {
 		val hierarchy = new ArrayList<Device>()
 		var current = device
@@ -32,8 +32,7 @@ class DeviceFactoryUtils {
 		]
 	}
 
-	static def getBoard(EObject context) {
-		val device = context.getContainerOfType(Device)
+	static def getBoard(Device device) {
 		val top = device.deviceHierarchy.last
 		switch top {
 			BaseDevice: top.board
@@ -47,20 +46,8 @@ class DeviceFactoryUtils {
 			datas.exists[name == data.name]
 		].datas.findFirst[name == data.name]
 	}
-
-	static def matches(QualifiedName me, QualifiedName other) {
-		val meSkipped = me.lastSegment == "*" ? me.skipLast(1) : me
-
-		if (meSkipped.segmentCount > other.segmentCount) {
-			return false
-		}
-
-		for (var i = 0; i < meSkipped.segmentCount; i++) {
-			if (meSkipped.getSegment(i) != other.getSegment(i)) {
-				return false
-			}
-		}
-
-		return true
+	
+	static def Iterable<Variable> getVariables(Sensor sensor) {
+		sensor.definition.variables
 	}
 }

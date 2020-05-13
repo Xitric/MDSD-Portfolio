@@ -1,10 +1,14 @@
 package org.iot.devicefactory.util
 
+import java.util.ArrayList
+import org.iot.devicefactory.common.Variable
+import org.iot.devicefactory.deviceLibrary.BaseSensor
 import org.iot.devicefactory.deviceLibrary.Board
+import org.iot.devicefactory.deviceLibrary.OverrideSensor
 import org.iot.devicefactory.deviceLibrary.Sensor
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import java.util.ArrayList
+import static extension org.iot.devicefactory.util.CommonUtils.*
 
 class DeviceLibraryUtils {
 
@@ -28,5 +32,29 @@ class DeviceLibraryUtils {
 	static def getParentSensor(Sensor sensor) {
 		val board = sensor.getContainerOfType(Board)
 		board.parent.allHierarchySensors.findFirst[name == sensor.name]
+	}
+	
+	static def Iterable<Variable> getInternalVariables(Sensor sensor) {
+		switch sensor {
+			BaseSensor:
+				sensor.input?.variables?.variables ?: emptyList
+			OverrideSensor: {
+				val parentSensor = sensor.parentSensor
+				if (parentSensor === null) {
+					return emptyList
+				} else {
+					parentSensor.variables
+				}
+			}
+		}
+	}
+	
+	static def Iterable<Variable> getVariables(Sensor sensor) {
+		val pipelineVars = sensor.preprocess?.pipeline?.variables
+		if (pipelineVars.nullOrEmpty) {
+			sensor.internalVariables
+		} else {
+			pipelineVars
+		}
 	}
 }

@@ -1,5 +1,6 @@
 package org.iot.devicefactory.util
 
+import org.eclipse.emf.ecore.EObject
 import org.iot.devicefactory.common.Map
 import org.iot.devicefactory.common.Pipeline
 import org.iot.devicefactory.common.Variable
@@ -19,7 +20,10 @@ class CommonUtils {
 	}
 	
 	static def Iterable<Variable> getVariables(Pipeline pipeline) {
-		val lastMap = pipeline.eAllOfType(Map).last
-		lastMap === null ? EMPTY_SET : lastMap.output.variables
+		pipeline.eAllOfType(Map).last?.output?.variables ?: emptyList
+	}
+	
+	static def Iterable<Variable> getVariables(EObject context) {
+		context.getContainerOfType(Pipeline)?.eContainer()?.getContainerOfType(Map)?.output?.variables ?: emptyList
 	}
 }
