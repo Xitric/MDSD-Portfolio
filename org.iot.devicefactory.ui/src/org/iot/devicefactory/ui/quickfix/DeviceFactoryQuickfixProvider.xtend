@@ -9,7 +9,7 @@ import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionAcceptor
 import org.eclipse.xtext.validation.Issue
 import org.iot.devicefactory.deviceFactory.Language
 import org.iot.devicefactory.generator.DeviceFactoryGenerator
-import org.iot.devicefactory.validation.DeviceFactoryValidator
+import org.iot.devicefactory.validation.DeviceFactoryIssueCodes
 
 /**
  * Custom quickfixes.
@@ -20,7 +20,7 @@ class DeviceFactoryQuickfixProvider extends CommonQuickfixProvider {
 
 	@Inject DeviceFactoryGenerator factoryGenerator
 
-	@Fix(DeviceFactoryValidator.SUPERFLUOUS_LIBRARY)
+	@Fix(DeviceFactoryIssueCodes.SUPERFLUOUS_LIBRARY)
 	def removePackageName(Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(issue, 'Remove library statement', 'Remove unused library statement', null) [
 			context |
@@ -31,7 +31,7 @@ class DeviceFactoryQuickfixProvider extends CommonQuickfixProvider {
 		]
 	}
 	
-	@Fix(DeviceFactoryValidator.UNSUPPORTED_LANGUAGE)
+	@Fix(DeviceFactoryIssueCodes.UNSUPPORTED_LANGUAGE)
 	def swapWithSupportedLanguage(Issue issue, IssueResolutionAcceptor acceptor) {
 		for (String language : factoryGenerator.supportedLanguages) {
 			acceptor.accept(issue, '''Change language to «language»''', '''Change language to «language»''', null) [
@@ -39,22 +39,5 @@ class DeviceFactoryQuickfixProvider extends CommonQuickfixProvider {
 				(element as Language).name = language
 			]
 		}
-	}
-
-	@Fix(DeviceFactoryValidator.INHERITANCE_CYCLE)
-	def removeInheritance(Issue issue, IssueResolutionAcceptor acceptor) {
-		acceptor.accept(issue, 'Convert to base device', 'Remove the inheritance and convert to a base device', null) [
-			context |
-			val document = context.xtextDocument
-			var beginOffset = 0
-			var String issueText
-			
-			do {
-				beginOffset++
-				issueText = document.get(issue.offset - beginOffset, issue.length + beginOffset)
-			} while(!issueText.startsWith("includes"))
-			
-			document.replace(issue.offset - beginOffset, issue.length + beginOffset, "board ")
-		]
 	}
 }

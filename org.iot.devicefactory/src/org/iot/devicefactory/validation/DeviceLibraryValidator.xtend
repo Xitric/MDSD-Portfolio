@@ -3,7 +3,6 @@
  */
 package org.iot.devicefactory.validation
 
-import java.util.HashSet
 import org.eclipse.xtext.validation.Check
 import org.iot.devicefactory.deviceLibrary.BaseSensor
 import org.iot.devicefactory.deviceLibrary.Board
@@ -11,6 +10,8 @@ import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
 import org.iot.devicefactory.deviceLibrary.Library
 import org.iot.devicefactory.deviceLibrary.OverrideSensor
 import org.iot.devicefactory.deviceLibrary.Sensor
+
+import static org.iot.devicefactory.validation.DeviceLibraryIssueCodes.*
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
@@ -21,12 +22,6 @@ import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
-	
-	public static val ILLEGAL_PACKAGE = "org.iot.devicefactory.deviceLibrary.ILLEGAL_PACKAGE"
-	public static val INCORRECT_PACKAGE = "org.iot.devicefactory.deviceLibrary.INCORRECT_PACKAGE"
-	public static val INHERITANCE_CYCLE = "org.iot.devicefactory.deviceLibrary.INHERITANCE_CYCLE"
-	public static val DUPLICATE_SENSOR = "org.iot.devicefactory.deviceLibrary.DUPLICATE_SENSOR"
-	public static val NON_OVERRIDING_SENSOR = "org.iot.devicefactory.deviceLibrary.NON_OVERRIDING_SENSOR"
 	
 	@Check
 	def validatePackage(Library library) {
@@ -43,21 +38,6 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 			if (library.name != expectedPackage) {
 				error('''Incorrect package name, expected «expectedPackage»''', Literals.LIBRARY__NAME, INCORRECT_PACKAGE, expectedPackage)
 			}
-		}
-	}
-	
-	@Check
-	def validateNoInheritanceCycles(Board board) {
-		val known = new HashSet<Board>()
-		var current = board
-		while (current !== null) {
-			if (known.contains(current)) {
-				error("Inheritance cycles are not allowed", Literals.BOARD__PARENT, INHERITANCE_CYCLE)
-				return
-			}
-			
-			known.add(current)
-			current = current.parent
 		}
 	}
 	

@@ -9,7 +9,7 @@ import org.iot.devicefactory.deviceFactory.Deployment
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.tests.MultiLanguageInjectorProvider
 import org.iot.devicefactory.tests.TestUtil
-import org.iot.devicefactory.validation.DeviceFactoryValidator
+import org.iot.devicefactory.validation.DeviceFactoryIssueCodes
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
@@ -29,7 +29,7 @@ class DeviceFactoryValidationTest {
 		language python
 		'''.parse(resourceSet).assertError(
 			Literals.DEPLOYMENT,
-			DeviceFactoryValidator.MISSING_CHANNEL,
+			DeviceFactoryIssueCodes.MISSING_CHANNEL,
 			"There must be at least one channel"
 		)
 	}
@@ -43,7 +43,7 @@ class DeviceFactoryValidationTest {
 		channel endpoint
 		'''.parse(resourceSet).assertError(
 			Literals.DEPLOYMENT,
-			DeviceFactoryValidator.MISSING_DEVICE,
+			DeviceFactoryIssueCodes.MISSING_DEVICE,
 			"There must be at least one device"
 		)
 	}
@@ -69,7 +69,7 @@ class DeviceFactoryValidationTest {
 					out filter[true]
 		'''.parse(resourceSet).assertError(
 			Literals.DEPLOYMENT,
-			DeviceFactoryValidator.AMBIGUOUS_FOG,
+			DeviceFactoryIssueCodes.AMBIGUOUS_FOG,
 			"There can be at most one fog"
 		)
 	}
@@ -83,7 +83,7 @@ class DeviceFactoryValidationTest {
 		channel endpoint
 		'''.parse(resourceSet).assertError(
 			Literals.DEPLOYMENT,
-			DeviceFactoryValidator.MISSING_CLOUD,
+			DeviceFactoryIssueCodes.MISSING_CLOUD,
 			"There must be a cloud"
 		)
 	}
@@ -109,7 +109,7 @@ class DeviceFactoryValidationTest {
 					out filter[true]
 		'''.parse(resourceSet).assertError(
 			Literals.DEPLOYMENT,
-			DeviceFactoryValidator.AMBIGUOUS_CLOUD,
+			DeviceFactoryIssueCodes.AMBIGUOUS_CLOUD,
 			"There can be at most one cloud"
 		)
 	}
@@ -122,7 +122,7 @@ class DeviceFactoryValidationTest {
 			sensor barometer sample signal
 				data raw_pressure
 					out endpoint
-		'''.parse.assertNoError(DeviceFactoryValidator.UNSUPPORTED_LANGUAGE)
+		'''.parse.assertNoError(DeviceFactoryIssueCodes.UNSUPPORTED_LANGUAGE)
 	}
 	
 	@Test def void testIllegalLanguage() {
@@ -135,7 +135,7 @@ class DeviceFactoryValidationTest {
 					out endpoint
 		'''.parse.assertError(
 			Literals.LANGUAGE,
-			DeviceFactoryValidator.UNSUPPORTED_LANGUAGE,
+			DeviceFactoryIssueCodes.UNSUPPORTED_LANGUAGE,
 			"Unsupported language brainfuck"
 		)
 	}

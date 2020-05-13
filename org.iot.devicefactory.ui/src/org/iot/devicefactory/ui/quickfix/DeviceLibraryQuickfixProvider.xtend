@@ -10,7 +10,7 @@ import org.iot.devicefactory.deviceLibrary.Board
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryFactory
 import org.iot.devicefactory.deviceLibrary.Library
 import org.iot.devicefactory.deviceLibrary.Sensor
-import org.iot.devicefactory.validation.DeviceLibraryValidator
+import org.iot.devicefactory.validation.DeviceLibraryIssueCodes
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
@@ -22,7 +22,7 @@ import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
  */
 class DeviceLibraryQuickfixProvider extends CommonQuickfixProvider {
 
-	@Fix(DeviceLibraryValidator.ILLEGAL_PACKAGE)
+	@Fix(DeviceLibraryIssueCodes.ILLEGAL_PACKAGE)
 	def removePackageName(Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(issue, 'Remove package statement', 'Remove incorrect usage of package statement', null) [
 			context |
@@ -33,7 +33,7 @@ class DeviceLibraryQuickfixProvider extends CommonQuickfixProvider {
 		]
 	}
 
-	@Fix(DeviceLibraryValidator.INCORRECT_PACKAGE)
+	@Fix(DeviceLibraryIssueCodes.INCORRECT_PACKAGE)
 	def changePackageName(Issue issue, IssueResolutionAcceptor acceptor) {
 		val expectedPackage = issue.data.get(0)
 		acceptor.accept(issue, '''Change to '«expectedPackage»' ''', '''Change package name to «expectedPackage» to reflect package structure''', null) [
@@ -41,16 +41,8 @@ class DeviceLibraryQuickfixProvider extends CommonQuickfixProvider {
 			(element as Library).name = expectedPackage
 		]
 	}
-
-	@Fix(DeviceLibraryValidator.INHERITANCE_CYCLE)
-	def removeInheritance(Issue issue, IssueResolutionAcceptor acceptor) {
-		acceptor.accept(issue, 'Remove inheritance', 'Remove the includes declaration', null) [
-			element, context |
-			(element as Board).parent = null
-		]
-	}
 	
-	@Fix(DeviceLibraryValidator.DUPLICATE_SENSOR)
+	@Fix(DeviceLibraryIssueCodes.DUPLICATE_SENSOR)
 	def removeDuplicateSensor(Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(issue, 'Remove duplicate sensor', 'A sensor can only be declared once per board. Remove duplicate definitions', null) [
 			element, context |
@@ -58,7 +50,7 @@ class DeviceLibraryQuickfixProvider extends CommonQuickfixProvider {
 		]
 	}
 	
-	@Fix(DeviceLibraryValidator.NON_OVERRIDING_SENSOR)
+	@Fix(DeviceLibraryIssueCodes.NON_OVERRIDING_SENSOR)
 	def overrideParentSensor(Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(issue, 'Override parent sensor', 'When redeclaring a sensor in a child board, it must override the definition from the parent', null) [
 			element, context |

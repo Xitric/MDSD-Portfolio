@@ -9,7 +9,7 @@ import org.iot.devicefactory.deviceFactory.Deployment
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.tests.MultiLanguageInjectorProvider
 import org.iot.devicefactory.tests.TestUtil
-import org.iot.devicefactory.validation.DeviceFactoryValidator
+import org.iot.devicefactory.validation.DeviceFactoryIssueCodes
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
@@ -35,7 +35,7 @@ class DeviceFactoryDuplicationValidationTest {
 					out endpoint
 		'''.parse(resourceSet).assertError(
 			Literals.CHANNEL,
-			DeviceFactoryValidator.DUPLICATE_CHANNEL,
+			DeviceFactoryIssueCodes.DUPLICATE_CHANNEL,
 			"Duplicate channel endpoint"
 		)
 	}
@@ -51,7 +51,7 @@ class DeviceFactoryDuplicationValidationTest {
 			sensor barometer sample frequency 10
 				data raw_pressure
 					out endpoint
-		'''.parse(resourceSet).assertNoError(DeviceFactoryValidator.DUPLICATE_CHANNEL)
+		'''.parse(resourceSet).assertNoError(DeviceFactoryIssueCodes.DUPLICATE_CHANNEL)
 	}
 	
 	@Test def void testDuplicateDevices() {
@@ -71,7 +71,7 @@ class DeviceFactoryDuplicationValidationTest {
 					out endpoint
 		'''.parse(resourceSet).assertError(
 			Literals.DEVICE,
-			DeviceFactoryValidator.DUPLICATE_DEVICE,
+			DeviceFactoryIssueCodes.DUPLICATE_DEVICE,
 			"Duplicate device controller"
 		)
 	}
@@ -93,7 +93,7 @@ class DeviceFactoryDuplicationValidationTest {
 					out endpoint
 		'''.parse(resourceSet).assertError(
 			Literals.DEVICE,
-			DeviceFactoryValidator.DUPLICATE_DEVICE,
+			DeviceFactoryIssueCodes.DUPLICATE_DEVICE,
 			"Duplicate device controller"
 		)
 	}
@@ -109,7 +109,7 @@ class DeviceFactoryDuplicationValidationTest {
 			sensor barometer sample frequency 10
 				data raw_pressure
 					out endpoint
-		'''.parse(resourceSet).assertNoError(DeviceFactoryValidator.DUPLICATE_DEVICE)
+		'''.parse(resourceSet).assertNoError(DeviceFactoryIssueCodes.DUPLICATE_DEVICE)
 	}
 	
 	@Test def void testDuplicateBaseSensors() {
@@ -182,13 +182,13 @@ class DeviceFactoryDuplicationValidationTest {
 			sensor barometer sample frequency 10
 				data raw_pressure
 					out endpoint
-		'''.parse(resourceSet).assertNoError(DeviceFactoryValidator.DUPLICATE_SENSOR)
+		'''.parse(resourceSet).assertNoError(DeviceFactoryIssueCodes.DUPLICATE_SENSOR)
 	}
 	
 	private def assertDuplicateSensors(Deployment deployment, String sensorName) {
 		deployment.assertError(
 			Literals.SENSOR,
-			DeviceFactoryValidator.DUPLICATE_SENSOR,
+			DeviceFactoryIssueCodes.DUPLICATE_SENSOR,
 			'''Duplicate sensor definition «sensorName» in same device'''
 		)
 	}
@@ -208,7 +208,7 @@ class DeviceFactoryDuplicationValidationTest {
 					out endpoint
 		'''.parse(resourceSet).assertError(
 			Literals.DATA,
-			DeviceFactoryValidator.DUPLICATE_DATA,
+			DeviceFactoryIssueCodes.DUPLICATE_DATA,
 			"Duplicate data raw_pressure in same sensor"
 		)
 	}
@@ -224,6 +224,6 @@ class DeviceFactoryDuplicationValidationTest {
 			sensor barometer sample frequency 10
 				data raw_pressure
 					out endpoint
-		'''.parse(resourceSet).assertNoError(DeviceFactoryValidator.DUPLICATE_DATA)
+		'''.parse(resourceSet).assertNoError(DeviceFactoryIssueCodes.DUPLICATE_DATA)
 	}
 }

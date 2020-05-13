@@ -9,7 +9,7 @@ import org.iot.devicefactory.deviceFactory.Deployment
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.tests.MultiLanguageInjectorProvider
 import org.iot.devicefactory.tests.TestUtil
-import org.iot.devicefactory.validation.DeviceFactoryValidator
+import org.iot.devicefactory.validation.DeviceFactoryIssueCodes
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
@@ -38,7 +38,7 @@ class DeviceFactoryInheritanceValidationTest {
 					out endpoint
 		'''.parse(resourceSet).assertError(
 			Literals.OVERRIDE_SENSOR,
-			DeviceFactoryValidator.ILLEGAL_OVERRIDE,
+			DeviceFactoryIssueCodes.ILLEGAL_OVERRIDE,
 			"No such sensor thermistor to override from parent"
 		)
 	}
@@ -56,7 +56,7 @@ class DeviceFactoryInheritanceValidationTest {
 					out endpoint
 		'''.parse(resourceSet).assertError(
 			Literals.OVERRIDE_SENSOR,
-			DeviceFactoryValidator.ILLEGAL_OVERRIDE,
+			DeviceFactoryIssueCodes.ILLEGAL_OVERRIDE,
 			"No such sensor barometer to override from parent"
 		)
 	}
@@ -78,7 +78,7 @@ class DeviceFactoryInheritanceValidationTest {
 					out endpoint
 		'''.parse(resourceSet).assertError(
 			Literals.BASE_SENSOR,
-			DeviceFactoryValidator.MISSING_OVERRIDE,
+			DeviceFactoryIssueCodes.MISSING_OVERRIDE,
 			"Redeclared sensor barometer must override inherited definition from parent"
 		)
 	}
@@ -100,8 +100,8 @@ class DeviceFactoryInheritanceValidationTest {
 				data raw_pressure
 					out endpoint
 		'''.parse(resourceSet) => [
-			assertNoError(DeviceFactoryValidator.ILLEGAL_OVERRIDE)
-			assertNoError(DeviceFactoryValidator.MISSING_OVERRIDE)
+			assertNoError(DeviceFactoryIssueCodes.ILLEGAL_OVERRIDE)
+			assertNoError(DeviceFactoryIssueCodes.MISSING_OVERRIDE)
 		]
 	}
 }

@@ -10,7 +10,7 @@ import org.iot.devicefactory.deviceFactory.Deployment
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.tests.MultiLanguageInjectorProvider
 import org.iot.devicefactory.tests.TestUtil
-import org.iot.devicefactory.validation.DeviceFactoryValidator
+import org.iot.devicefactory.validation.DeviceFactoryIssueCodes
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
@@ -123,7 +123,7 @@ class DeviceFactoryImportValidationTest {
 					out endpoint
 		'''.parse(resourceSet).assertError(
 			Literals.LIBRARY,
-			DeviceFactoryValidator.SUPERFLUOUS_LIBRARY,
+			DeviceFactoryIssueCodes.SUPERFLUOUS_LIBRARY,
 			"No resource found with qualified name ioot"
 		)
 	}
@@ -141,7 +141,7 @@ class DeviceFactoryImportValidationTest {
 					out endpoint
 		'''.parse(resourceSet).assertWarning(
 			Literals.LIBRARY,
-			DeviceFactoryValidator.SUPERFLUOUS_LIBRARY,
+			DeviceFactoryIssueCodes.SUPERFLUOUS_LIBRARY,
 			"Unnecessary import of library esp32 has no effect"
 		)
 	}

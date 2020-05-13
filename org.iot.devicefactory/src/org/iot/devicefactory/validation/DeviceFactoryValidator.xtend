@@ -4,13 +4,11 @@
 package org.iot.devicefactory.validation
 
 import com.google.inject.Inject
-import java.util.HashSet
 import org.eclipse.xtext.naming.IQualifiedNameConverter
 import org.eclipse.xtext.validation.Check
 import org.eclipse.xtext.validation.CheckType
 import org.iot.devicefactory.deviceFactory.BaseSensor
 import org.iot.devicefactory.deviceFactory.Channel
-import org.iot.devicefactory.deviceFactory.ChildDevice
 import org.iot.devicefactory.deviceFactory.Data
 import org.iot.devicefactory.deviceFactory.Deployment
 import org.iot.devicefactory.deviceFactory.Device
@@ -25,6 +23,8 @@ import org.iot.devicefactory.generator.DeviceFactoryGenerator
 import org.iot.devicefactory.typing.DeviceFactoryTypeChecker
 import org.iot.devicefactory.util.IndexUtils
 
+import static org.iot.devicefactory.validation.DeviceFactoryIssueCodes.*
+
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
 
@@ -35,27 +35,7 @@ import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
  */
 class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	
-	//TODO: Extract to interface and use prefix
 	//TODO: Better utilities for navigating EMF model - good for generator, and can be explained in the report 
-	
-	public static val MISSING_CHANNEL = "org.iot.devicefactory.deviceFactory.MISSING_CHANNEL"
-	public static val MISSING_DEVICE = "org.iot.devicefactory.deviceFactory.MISSING_DEVICE"
-	public static val AMBIGUOUS_FOG = "org.iot.devicefactory.deviceFactory.AMBIGUOUS_FOG"
-	public static val MISSING_CLOUD = "org.iot.devicefactory.deviceFactory.MISSING_CLOUD"
-	public static val AMBIGUOUS_CLOUD = "org.iot.devicefactory.deviceFactory.AMBIGUOUS_CLOUD"
-	
-	public static val SUPERFLUOUS_LIBRARY = "org.iot.devicefactory.deviceFactory.SUPERFLUOUS_LIBRARY"
-	public static val UNSUPPORTED_LANGUAGE = "org.iot.devicefactory.deviceFactory.UNSUPPORTED_LANGUAGE"
-	public static val INHERITANCE_CYCLE = "org.iot.devicefactory.deviceFactory.INHERITANCE_CYCLE"
-	public static val INCORRECT_OUT_TYPE = "org.iot.devicefactory.deviceFactory.INCORRECT_OUT_TYPE"
-	
-	public static val ILLEGAL_OVERRIDE = "org.iot.devicefactory.deviceFactory.ILLEGAL_OVERRIDE"
-	public static val MISSING_OVERRIDE = "org.iot.devicefactory.deviceFactory.MISSING_OVERRIDE"
-	
-	public static val DUPLICATE_CHANNEL = "org.iot.devicefactory.deviceFactory.DUPLICATE_CHANNEL"
-	public static val DUPLICATE_DEVICE = "org.iot.devicefactory.deviceFactory.DUPLICATE_DEVICE"
-	public static val DUPLICATE_SENSOR = "org.iot.devicefactory.deviceFactory.DUPLICATE_SENSOR"
-	public static val DUPLICATE_DATA = "org.iot.devicefactory.deviceFactory.DUPLICATE_DATA"
 	
 	@Inject DeviceFactoryGenerator factoryGenerator
 	@Inject extension IndexUtils
@@ -109,24 +89,6 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	def validateLanguage(Language language) {
 		if (! factoryGenerator.supportedLanguages.contains(language.name)) {
 			error('''Unsupported language «language.name»''', Literals.LANGUAGE__NAME, UNSUPPORTED_LANGUAGE)
-		}
-	}
-	
-	@Check
-	def validateNoInheritanceCycles(ChildDevice device) {
-		val known = new HashSet<Device>()
-		var Device current = device
-		while (current !== null) {
-			if (known.contains(current)) {
-				error("Inheritance cycles are not allowed", Literals.CHILD_DEVICE__PARENT, INHERITANCE_CYCLE)
-				return
-			}
-			
-			known.add(current)
-			current = switch current {
-				ChildDevice: current.parent
-				default: null
-			}
 		}
 	}
 	

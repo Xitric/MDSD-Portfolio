@@ -11,7 +11,7 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
 import org.iot.devicefactory.deviceLibrary.Library
 import org.iot.devicefactory.tests.DeviceLibraryInjectorProvider
-import org.iot.devicefactory.validation.DeviceLibraryValidator
+import org.iot.devicefactory.validation.DeviceLibraryIssueCodes
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
@@ -31,7 +31,7 @@ class DeviceLibraryValidationTest {
 		'''.parse(URI.createURI("resource/DeviceFactory/src/base_boards.iotc"), resourceSetProvider.get)
 			.assertError(
 				Literals.LIBRARY,
-				DeviceLibraryValidator.ILLEGAL_PACKAGE,
+				DeviceLibraryIssueCodes.ILLEGAL_PACKAGE,
 				"There cannot be a package declaration in library files located outside a package"
 			)
 	}
@@ -43,7 +43,7 @@ class DeviceLibraryValidationTest {
 		'''.parse(URI.createURI("resource/DeviceFactory/src/iot/base_boards.iotc"), resourceSetProvider.get)
 			.assertError(
 				Literals.LIBRARY,
-				DeviceLibraryValidator.INCORRECT_PACKAGE,
+				DeviceLibraryIssueCodes.INCORRECT_PACKAGE,
 				"Incorrect package name, expected iot"
 			)
 	}
@@ -56,7 +56,7 @@ class DeviceLibraryValidationTest {
 		'''.parse(URI.createURI("resource/DeviceFactory/src/iot/base_boards.iotc"), resourceSetProvider.get)
 			.assertError(
 				Literals.LIBRARY,
-				DeviceLibraryValidator.INCORRECT_PACKAGE,
+				DeviceLibraryIssueCodes.INCORRECT_PACKAGE,
 				"Incorrect package name, expected iot"
 			)
 	}
@@ -133,7 +133,7 @@ class DeviceLibraryValidationTest {
 	private def assertDuplicateSensors(Library library, String sensorName) {
 		library.assertError(
 			Literals.SENSOR,
-			DeviceLibraryValidator.DUPLICATE_SENSOR,
+			DeviceLibraryIssueCodes.DUPLICATE_SENSOR,
 			'''Duplicate sensor definition «sensorName» in same board'''
 		)
 	}
@@ -147,7 +147,7 @@ class DeviceLibraryValidationTest {
 			sensor a pin(12) as p
 		'''.parse.assertError(
 			Literals.SENSOR,
-			DeviceLibraryValidator.NON_OVERRIDING_SENSOR,
+			DeviceLibraryIssueCodes.NON_OVERRIDING_SENSOR,
 			"Redeclared sensor a must override inherited definition from parent"
 		)
 	}

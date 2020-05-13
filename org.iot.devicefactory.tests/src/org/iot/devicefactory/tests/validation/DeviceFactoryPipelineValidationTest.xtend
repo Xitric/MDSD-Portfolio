@@ -9,7 +9,7 @@ import org.iot.devicefactory.deviceFactory.Deployment
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.tests.MultiLanguageInjectorProvider
 import org.iot.devicefactory.tests.TestUtil
-import org.iot.devicefactory.validation.DeviceFactoryValidator
+import org.iot.devicefactory.validation.DeviceFactoryIssueCodes
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
@@ -36,7 +36,7 @@ class DeviceFactoryPipelineValidationTest {
 					out endpoint map[b * b => a]
 					out endpoint map[b + b => b]
 					out endpoint map[2 => c]
-		'''.parse(resourceSet).assertNoError(DeviceFactoryValidator.INCORRECT_OUT_TYPE)
+		'''.parse(resourceSet).assertNoError(DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE)
 	}
 	
 	@Test def void testOutsNumberTypes() {
@@ -53,7 +53,7 @@ class DeviceFactoryPipelineValidationTest {
 				data raw_pressure
 					out endpoint map[2.4 => a]
 					out endpoint map[2 => a]
-		'''.parse(resourceSet).assertNoError(DeviceFactoryValidator.INCORRECT_OUT_TYPE)
+		'''.parse(resourceSet).assertNoError(DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE)
 	}
 	
 	@Test def void testOutsNoPipelines() {
@@ -70,7 +70,7 @@ class DeviceFactoryPipelineValidationTest {
 				data raw_pressure
 					out endpoint
 					out endpoint
-		'''.parse(resourceSet).assertNoError(DeviceFactoryValidator.INCORRECT_OUT_TYPE)
+		'''.parse(resourceSet).assertNoError(DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE)
 	}
 	
 	@Test def void testOutsDifferentTypes() {
@@ -89,7 +89,7 @@ class DeviceFactoryPipelineValidationTest {
 					out endpoint map[b > 5 => a]
 		'''.parse(resourceSet).assertError(
 			Literals.SENSOR_DATA_OUT,
-			DeviceFactoryValidator.INCORRECT_OUT_TYPE,
+			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
 			"Incorrect output type from data pipeline. Expected integer, got boolean"
 		)
 	}
@@ -111,7 +111,7 @@ class DeviceFactoryPipelineValidationTest {
 			override sensor barometer
 				data raw_pressure
 					out endpoint map[true => a]
-		'''.parse(resourceSet).assertNoError(DeviceFactoryValidator.INCORRECT_OUT_TYPE)
+		'''.parse(resourceSet).assertNoError(DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE)
 	}
 	
 	@Test def void testOutsChildDeviceDifferentTypes() {
@@ -133,7 +133,7 @@ class DeviceFactoryPipelineValidationTest {
 					out endpoint map[b => a]
 		'''.parse(resourceSet).assertError(
 			Literals.SENSOR_DATA_OUT,
-			DeviceFactoryValidator.INCORRECT_OUT_TYPE,
+			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
 			"Incorrect output type from data pipeline. Expected boolean, got integer"
 		)
 	}
@@ -162,12 +162,12 @@ class DeviceFactoryPipelineValidationTest {
 		'''.parse(resourceSet) => [
 			assertError(
 				Literals.SENSOR_DATA_OUT,
-				DeviceFactoryValidator.INCORRECT_OUT_TYPE,
+				DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
 				"Incorrect output type from data pipeline. Expected boolean, got integer"
 			)
 			assertError(
 				Literals.SENSOR_DATA_OUT,
-				DeviceFactoryValidator.INCORRECT_OUT_TYPE,
+				DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
 				"Incorrect output type from data pipeline. Expected boolean, got double"
 			)
 		]
@@ -196,7 +196,7 @@ class DeviceFactoryPipelineValidationTest {
 					out endpoint map[b => a]
 		'''.parse(resourceSet).assertError(
 			Literals.SENSOR_DATA_OUT,
-			DeviceFactoryValidator.INCORRECT_OUT_TYPE,
+			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
 			"Incorrect output type from data pipeline. Expected boolean, got integer"
 		)
 	}
@@ -220,7 +220,7 @@ class DeviceFactoryPipelineValidationTest {
 					out endpoint map[5 => a]
 		'''.parse(resourceSet).assertError(
 			Literals.SENSOR_DATA_OUT,
-			DeviceFactoryValidator.INCORRECT_OUT_TYPE,
+			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
 			"Incorrect output type from data pipeline. Expected (integer, integer), got integer"
 		)
 	}
