@@ -8,6 +8,8 @@ import java.util.HashSet
 import org.eclipse.xtext.naming.IQualifiedNameConverter
 import org.eclipse.xtext.validation.Check
 import org.eclipse.xtext.validation.CheckType
+import org.iot.devicefactory.deviceFactory.BaseSensor
+import org.iot.devicefactory.deviceFactory.Channel
 import org.iot.devicefactory.deviceFactory.ChildDevice
 import org.iot.devicefactory.deviceFactory.Data
 import org.iot.devicefactory.deviceFactory.Deployment
@@ -15,6 +17,8 @@ import org.iot.devicefactory.deviceFactory.Device
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.deviceFactory.Language
 import org.iot.devicefactory.deviceFactory.Library
+import org.iot.devicefactory.deviceFactory.OverrideSensor
+import org.iot.devicefactory.deviceFactory.Sensor
 import org.iot.devicefactory.deviceFactory.SensorDataOut
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage
 import org.iot.devicefactory.generator.DeviceFactoryGenerator
@@ -31,6 +35,9 @@ import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
  */
 class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	
+	//TODO: Extract to interface and use prefix
+	//TODO: Better utilities for navigating EMF model - good for generator, and can be explained in the report 
+	
 	public static val MISSING_CHANNEL = "org.iot.devicefactory.deviceFactory.MISSING_CHANNEL"
 	public static val MISSING_DEVICE = "org.iot.devicefactory.deviceFactory.MISSING_DEVICE"
 	public static val AMBIGUOUS_FOG = "org.iot.devicefactory.deviceFactory.AMBIGUOUS_FOG"
@@ -41,6 +48,14 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	public static val UNSUPPORTED_LANGUAGE = "org.iot.devicefactory.deviceFactory.UNSUPPORTED_LANGUAGE"
 	public static val INHERITANCE_CYCLE = "org.iot.devicefactory.deviceFactory.INHERITANCE_CYCLE"
 	public static val INCORRECT_OUT_TYPE = "org.iot.devicefactory.deviceFactory.INCORRECT_OUT_TYPE"
+	
+	public static val ILLEGAL_OVERRIDE = "org.iot.devicefactory.deviceFactory.ILLEGAL_OVERRIDE"
+	public static val MISSING_OVERRIDE = "org.iot.devicefactory.deviceFactory.MISSING_OVERRIDE"
+	
+	public static val DUPLICATE_CHANNEL = "org.iot.devicefactory.deviceFactory.DUPLICATE_CHANNEL"
+	public static val DUPLICATE_DEVICE = "org.iot.devicefactory.deviceFactory.DUPLICATE_DEVICE"
+	public static val DUPLICATE_SENSOR = "org.iot.devicefactory.deviceFactory.DUPLICATE_SENSOR"
+	public static val DUPLICATE_DATA = "org.iot.devicefactory.deviceFactory.DUPLICATE_DATA"
 	
 	@Inject DeviceFactoryGenerator factoryGenerator
 	@Inject extension IndexUtils
@@ -126,6 +141,56 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 				Literals.SENSOR_DATA_OUT__PIPELINE,
 				INCORRECT_OUT_TYPE
 			)
+		}
+	}
+	
+	@Check
+	def validateLegalOverride(OverrideSensor sensor) {
+		if (sensor.sensorHierarchy.size == 1) {
+			error('''No such sensor «sensor.definition.name» to override from parent''',
+				Literals.SENSOR__DEFINITION, ILLEGAL_OVERRIDE
+			)
+		}
+	}
+	
+	@Check
+	def validateChildSensorsOverride(BaseSensor sensor) {
+		if (sensor.sensorHierarchy.size > 1) {
+			error('''Redeclared sensor «sensor.definition.name» must override inherited definition from parent''',
+				Literals.SENSOR__DEFINITION, MISSING_OVERRIDE
+			)
+		}
+	}
+	
+	@Check
+	def validateChannel(Channel channel) {
+		val deployment = channel.getContainerOfType(Deployment)
+		if (deployment.channels.takeWhile[it !== channel].exists[name == channel.name]) {
+			error('''Duplicate channel «channel.name»''', Literals.CHANNEL__NAME, DUPLICATE_CHANNEL)
+		}
+	}
+	
+	@Check
+	def validateDevice(Device device) {
+		val deployment = device.getContainerOfType(Deployment)
+		if (deployment.devices.takeWhile[it !== device].exists[name == device.name]) {
+			error('''Duplicate device «device.name»''', Literals.DEVICE__NAME, DUPLICATE_DEVICE)
+		}
+	}
+	
+	@Check
+	def validateSensor(Sensor sensor) {
+		val device = sensor.getContainerOfType(Device)
+		if (device.sensors.takeWhile[it !== sensor].exists[definition === sensor.definition]) {
+			error('''Duplicate sensor definition «sensor.definition.name» in same device''', Literals.SENSOR__DEFINITION, DUPLICATE_SENSOR)
+		}
+	}
+	
+	@Check
+	def validateData(Data data) {
+		val sensor = data.getContainerOfType(Sensor)
+		if (sensor.datas.takeWhile[it !== data].exists[name == data.name]) {
+			error('''Duplicate data «data.name» in same sensor''', Literals.DATA__NAME, DUPLICATE_DATA)
 		}
 	}
 }

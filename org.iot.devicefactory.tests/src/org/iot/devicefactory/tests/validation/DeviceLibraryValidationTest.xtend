@@ -113,7 +113,7 @@ class DeviceLibraryValidationTest {
 		define board BoardB includes BoardA
 			sensor a pin(12) as p
 			override sensor a
-				preprocess filter[true
+				preprocess filter[true]
 		'''.parse.assertDuplicateSensors("a")
 	}
 	
@@ -126,7 +126,7 @@ class DeviceLibraryValidationTest {
 			override sensor a
 				preprocess filter[true]
 			override sensor a
-				preprocess filter[true
+				preprocess filter[true]
 		'''.parse.assertDuplicateSensors("a")
 	}
 	

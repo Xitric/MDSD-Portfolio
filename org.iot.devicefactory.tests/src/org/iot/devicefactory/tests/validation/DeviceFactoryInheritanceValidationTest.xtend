@@ -1,0 +1,107 @@
+package org.iot.devicefactory.tests.validation
+
+import com.google.inject.Inject
+import org.eclipse.xtext.testing.InjectWith
+import org.eclipse.xtext.testing.extensions.InjectionExtension
+import org.eclipse.xtext.testing.util.ParseHelper
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import org.iot.devicefactory.deviceFactory.Deployment
+import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
+import org.iot.devicefactory.tests.MultiLanguageInjectorProvider
+import org.iot.devicefactory.tests.TestUtil
+import org.iot.devicefactory.validation.DeviceFactoryValidator
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.^extension.ExtendWith
+
+@ExtendWith(InjectionExtension)
+@InjectWith(MultiLanguageInjectorProvider)
+class DeviceFactoryInheritanceValidationTest {
+	
+	@Inject extension ParseHelper<Deployment>
+	@Inject extension ValidationTestHelper
+	@Inject extension TestUtil
+	
+	@Test def void testIllegalSensorOverride() {
+		val resourceSet = makePackagedBoardLibrary()
+		
+		'''
+		library iot.boards.*
+		language python
+		channel endpoint
+		device controller board esp32_azure_v2
+			sensor barometer sample frequency 10
+				data raw_pressure
+					out endpoint
+		device controller_child includes controller
+			override sensor thermistor
+				data raw_temperature
+					out endpoint
+		'''.parse(resourceSet).assertError(
+			Literals.OVERRIDE_SENSOR,
+			DeviceFactoryValidator.ILLEGAL_OVERRIDE,
+			"No such sensor thermistor to override from parent"
+		)
+	}
+	
+	@Test def void testBaseSensorOverride() {
+		val resourceSet = makePackagedBoardLibrary()
+		
+		'''
+		library iot.boards.*
+		language python
+		channel endpoint
+		device controller board esp32
+			override sensor barometer
+				data raw_pressure
+					out endpoint
+		'''.parse(resourceSet).assertError(
+			Literals.OVERRIDE_SENSOR,
+			DeviceFactoryValidator.ILLEGAL_OVERRIDE,
+			"No such sensor barometer to override from parent"
+		)
+	}
+	
+	@Test def void testMissingSensorOverride() {
+		val resourceSet = makePackagedBoardLibrary()
+		
+		'''
+		library iot.boards.*
+		language python
+		channel endpoint
+		device controller board esp32_azure
+			sensor barometer sample frequency 10
+				data raw_pressure
+					out endpoint
+		device controller_child includes controller
+			sensor barometer sample frequency 10
+				data raw_pressure
+					out endpoint
+		'''.parse(resourceSet).assertError(
+			Literals.BASE_SENSOR,
+			DeviceFactoryValidator.MISSING_OVERRIDE,
+			"Redeclared sensor barometer must override inherited definition from parent"
+		)
+	}
+	
+	@Test def void testLegalSensorOverride() {
+		val resourceSet = makePackagedBoardLibrary()
+		
+		'''
+		library iot.boards.*
+		language python
+		channel endpoint
+		device controller board esp32_azure
+			in endpoint
+			sensor barometer sample frequency 10
+				data raw_pressure
+					out endpoint
+		device controller_child includes controller
+			override sensor barometer sample signal
+				data raw_pressure
+					out endpoint
+		'''.parse(resourceSet) => [
+			assertNoError(DeviceFactoryValidator.ILLEGAL_OVERRIDE)
+			assertNoError(DeviceFactoryValidator.MISSING_OVERRIDE)
+		]
+	}
+}
