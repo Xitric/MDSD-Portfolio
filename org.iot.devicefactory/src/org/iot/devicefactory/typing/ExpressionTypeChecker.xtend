@@ -152,12 +152,12 @@ class ExpressionTypeChecker {
 	def typeOfPipeline(Pipeline pipeline) {
 		var Pipeline lastTypeChanger = null
 		
-		var next = pipeline
-		while (next !== null) {
-			switch next {
-				Map, Window: lastTypeChanger = next
+		var current = pipeline
+		while (current !== null) {
+			switch current {
+				Map, Window: lastTypeChanger = current
 			}
-			next = pipeline.next
+			current = current.next
 		}
 		
 		switch lastTypeChanger {
