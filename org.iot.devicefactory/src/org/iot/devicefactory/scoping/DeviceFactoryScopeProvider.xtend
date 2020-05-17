@@ -9,14 +9,17 @@ import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.iot.devicefactory.common.CommonPackage
-import org.iot.devicefactory.deviceFactory.BaseDevice
 import org.iot.devicefactory.deviceFactory.ChildDevice
+import org.iot.devicefactory.deviceFactory.Cloud
+import org.iot.devicefactory.deviceFactory.Data
 import org.iot.devicefactory.deviceFactory.Device
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
+import org.iot.devicefactory.deviceFactory.Fog
 import org.iot.devicefactory.deviceFactory.Sensor
 import org.iot.devicefactory.deviceLibrary.Board
 import org.iot.devicefactory.util.DeviceLibraryUtils
 
+import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.CommonUtils.*
 import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
@@ -37,6 +40,8 @@ class DeviceFactoryScopeProvider extends AbstractDeviceFactoryScopeProvider {
 				context.parentSensorScope
 			case CommonPackage.Literals.REFERENCE__VARIABLE:
 				context.referenceVariableScope
+			case Literals.TRANSFORMATION__PROVIDER:
+				context.transformationDatas
 			default:
 				super.getScope(context, reference)
 		}
@@ -79,5 +84,23 @@ class DeviceFactoryScopeProvider extends AbstractDeviceFactoryScopeProvider {
 		} else {
 			Scopes.scopeFor(expressionScope)
 		}
+	}
+	
+	private def IScope getTransformationDatas(EObject context) {
+		var scope = context.eContainer.getContainerOfType(Cloud)?.getOutputDefinitionsFrom(Device, Fog)
+		if (scope === null) {
+			scope = context.eContainer.getContainerOfType(Fog)?.getOutputDefinitionsFrom(Device)
+			if (scope === null) {
+				return IScope.NULLSCOPE
+			}
+			return Scopes.scopeFor(scope)
+		}
+		return Scopes.scopeFor(scope)
+	}
+	
+	def private Iterable<Data> getOutputDefinitionsFrom(EObject context, Class<? extends EObject>... types) {
+		types.flatMap [
+			context.getSiblingsOfType(it).allContents.filter(Data).toIterable
+		]
 	}
 }

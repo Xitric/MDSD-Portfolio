@@ -14,12 +14,12 @@ import org.iot.devicefactory.deviceFactory.Fog
 import org.iot.devicefactory.deviceFactory.Language
 import org.iot.devicefactory.deviceFactory.Library
 import org.iot.devicefactory.deviceFactory.OverrideSensor
+import org.iot.devicefactory.deviceFactory.Sampler
 import org.iot.devicefactory.deviceFactory.SensorData
-import org.iot.devicefactory.deviceFactory.SensorDataOut
+import org.iot.devicefactory.deviceFactory.SensorOut
 import org.iot.devicefactory.deviceFactory.Transformation
 import org.iot.devicefactory.deviceFactory.TransformationData
 import org.iot.devicefactory.deviceFactory.TransformationOut
-import org.iot.devicefactory.deviceFactory.Sampler
 
 class DeviceFactoryFormatter extends CommonFormatter {
 
@@ -67,7 +67,7 @@ class DeviceFactoryFormatter extends CommonFormatter {
 		
 	}
 	
-	def dispatch void format(SensorDataOut sensorDataOut, extension IFormattableDocument document) {
+	def dispatch void format(SensorOut sensorDataOut, extension IFormattableDocument document) {
 		
 	}
 	

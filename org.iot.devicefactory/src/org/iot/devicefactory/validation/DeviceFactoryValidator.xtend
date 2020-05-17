@@ -16,9 +16,9 @@ import org.iot.devicefactory.deviceFactory.Device
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.deviceFactory.Language
 import org.iot.devicefactory.deviceFactory.Library
+import org.iot.devicefactory.deviceFactory.Out
 import org.iot.devicefactory.deviceFactory.OverrideSensor
 import org.iot.devicefactory.deviceFactory.Sensor
-import org.iot.devicefactory.deviceFactory.SensorDataOut
 import org.iot.devicefactory.generator.DeviceFactoryGenerator
 import org.iot.devicefactory.typing.DeviceFactoryTypeChecker
 import org.iot.devicefactory.util.IndexUtils
@@ -92,14 +92,14 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	}
 	
 	@Check
-	def validateOutTypes(SensorDataOut output) {
+	def validateOutTypes(Out output) {
 		val expectedType = output.getContainerOfType(Data).typeOf
 		val actualType = output.typeOf
 		
 		if (actualType != expectedType) {
 			error(
 				'''Incorrect output type from data pipeline. Expected «expectedType», got «actualType»''',
-				Literals.SENSOR_DATA_OUT__PIPELINE,
+				Literals.OUT__PIPELINE,
 				INCORRECT_OUT_TYPE
 			)
 		}

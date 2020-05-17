@@ -60,11 +60,11 @@ OverrideSensor:
 
 SensorData:
 	'data' name=ID BEGIN
-		outputs += SensorDataOut+
+		outputs += SensorOut+
 	END
 ;
 
-SensorDataOut:
+SensorOut:
 	'out' channel=[Channel] pipeline=Pipeline?
 ;
 
@@ -103,4 +103,8 @@ TransformationOut:
 
 Data:
 	SensorData | TransformationData
+;
+
+Out:
+	SensorOut | TransformationOut
 ;

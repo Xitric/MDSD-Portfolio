@@ -88,7 +88,7 @@ class DeviceFactoryPipelineValidationTest {
 					out endpoint map[b * b => a]
 					out endpoint map[b > 5 => a]
 		'''.parse(resourceSet).assertError(
-			Literals.SENSOR_DATA_OUT,
+			Literals.SENSOR_OUT,
 			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
 			"Incorrect output type from data pipeline. Expected integer, got boolean"
 		)
@@ -132,7 +132,7 @@ class DeviceFactoryPipelineValidationTest {
 				data raw_pressure
 					out endpoint map[b => a]
 		'''.parse(resourceSet).assertError(
-			Literals.SENSOR_DATA_OUT,
+			Literals.SENSOR_OUT,
 			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
 			"Incorrect output type from data pipeline. Expected boolean, got integer"
 		)
@@ -161,12 +161,12 @@ class DeviceFactoryPipelineValidationTest {
 					out endpoint map[3e8 => a]
 		'''.parse(resourceSet) => [
 			assertError(
-				Literals.SENSOR_DATA_OUT,
+				Literals.SENSOR_OUT,
 				DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
 				"Incorrect output type from data pipeline. Expected boolean, got integer"
 			)
 			assertError(
-				Literals.SENSOR_DATA_OUT,
+				Literals.SENSOR_OUT,
 				DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
 				"Incorrect output type from data pipeline. Expected boolean, got double"
 			)
@@ -195,7 +195,7 @@ class DeviceFactoryPipelineValidationTest {
 				data raw_pressure
 					out endpoint map[b => a]
 		'''.parse(resourceSet).assertError(
-			Literals.SENSOR_DATA_OUT,
+			Literals.SENSOR_OUT,
 			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
 			"Incorrect output type from data pipeline. Expected boolean, got integer"
 		)
@@ -219,7 +219,7 @@ class DeviceFactoryPipelineValidationTest {
 				data raw_temperature
 					out endpoint map[5 => a]
 		'''.parse(resourceSet).assertError(
-			Literals.SENSOR_DATA_OUT,
+			Literals.SENSOR_OUT,
 			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
 			"Incorrect output type from data pipeline. Expected (integer, integer), got integer"
 		)
@@ -265,9 +265,63 @@ class DeviceFactoryPipelineValidationTest {
 				data some_data
 					out endpoint map[b => d]
 		'''.parse(resourceSet).assertError(
-			Literals.SENSOR_DATA_OUT,
+			Literals.SENSOR_OUT,
 			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
 			"Incorrect output type from data pipeline. Expected boolean, got integer"
+		)
+	}
+	
+	@Test def void testOutsFog() {
+		val resourceSet = makePackagedBoardLibrary()
+		
+		'''
+		library iot.boards.*
+		language python
+		channel inserial
+		channel endpoint
+		device controllerA board esp32
+			in inserial
+			sensor barometer sample signal
+				data some_data
+					out endpoint map[b > 5 => a]
+				data pressure
+					out endpoint map[b ** 2 => a]
+		fog
+			transformation pressure as h
+				data some_data
+					out map[h => d]
+		'''.parse(resourceSet).assertError(
+			Literals.TRANSFORMATION_OUT,
+			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
+			"Incorrect output type from data pipeline. Expected boolean, got integer"
+		)
+	}
+	
+	@Test def void testOutsCloud() {
+		val resourceSet = makePackagedBoardLibrary()
+		
+		'''
+		library iot.boards.*
+		language python
+		channel inserial
+		channel endpoint
+		device controllerA board esp32
+			in inserial
+			sensor barometer sample signal
+				data pressure
+					out endpoint map[b ** 2 => a]
+		fog
+			transformation pressure as h
+				data fog_data
+					out map[h > 10 => d]
+		cloud
+			transformation fog_data as h
+				data pressure
+					out map[h => d]
+		'''.parse(resourceSet).assertError(
+			Literals.SENSOR_OUT,
+			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
+			"Incorrect output type from data pipeline. Expected integer, got boolean"
 		)
 	}
 }

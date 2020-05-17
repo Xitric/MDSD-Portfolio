@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static extension org.iot.devicefactory.tests.TestUtil.*
+import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(MultiLanguageInjectorProvider)
@@ -204,6 +205,81 @@ class DeviceFactoryScopingTest {
 		'''.parse(resourceSet).devices.get(1).sensors.get(0).datas.get(0).outputs.get(0).pipeline.assertScope(
 			CommonPackage.Literals.REFERENCE__VARIABLE,
 				#["p"]
+		)
+	}
+	
+	@Test def void testDataScopeFogEmpty() {
+		val resourceSet = makePackagedBoardLibrary()
+		
+		'''
+		library iot.boards.*
+		language python
+		channel endpoint
+		fog
+			transformation some_data as a
+				data derived_data
+					out filter[true]
+		'''.parse(resourceSet).fog.transformations.get(0).assertScope(
+			Literals.TRANSFORMATION__PROVIDER,
+			#[]
+		)
+	}
+	
+	@Test def void testDataScopeFog() {
+		val resourceSet = makePackagedBoardLibrary()
+		
+		'''
+		library iot.boards.*
+		language python
+		channel endpoint
+		device controller board esp32_azure
+			sensor barometer sample signal
+				data raw_pressure
+					out endpoint map[p + 1 => q]
+		device sub_controller includes controller
+			override sensor barometer sample frequency 10
+				data some_data
+					out endpoint filter[true]
+		cloud
+			transformation some_data as a
+				data cloud_data
+					out filter[true]
+		fog
+			transformation some_data as a
+				data fog_data
+					out filter[true]
+		'''.parse(resourceSet).fog.transformations.get(0).assertScope(
+			Literals.TRANSFORMATION__PROVIDER,
+			#["raw_pressure", "some_data"]
+		)
+	}
+	
+	@Test def void testDataScopeCloud() {
+		val resourceSet = makePackagedBoardLibrary()
+		
+		'''
+		library iot.boards.*
+		language python
+		channel endpoint
+		device controller board esp32_azure
+			sensor barometer sample signal
+				data raw_pressure
+					out endpoint map[p + 1 => q]
+		device sub_controller includes controller
+			override sensor barometer sample frequency 10
+				data some_data
+					out endpoint filter[true]
+		cloud
+			transformation some_data as a
+				data cloud_data
+					out filter[true]
+		fog
+			transformation some_data as a
+				data fog_data
+					out filter[true]
+		'''.parse(resourceSet).cloud.transformations.get(0).assertScope(
+			Literals.TRANSFORMATION__PROVIDER,
+			#["raw_pressure", "some_data", "fog_data"]
 		)
 	}
 }
