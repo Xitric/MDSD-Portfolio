@@ -4,6 +4,7 @@ import com.google.inject.Inject
 import com.google.inject.Provider
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.resource.ResourceSet
+import org.eclipse.xtext.diagnostics.Diagnostic
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.util.ParseHelper
@@ -158,8 +159,8 @@ class DeviceLibraryValidationTest {
 			override sensor a
 		'''.parse.assertError(
 			Literals.SENSOR,
-			null,
-			"No such sensor a to override from parent"
+			Diagnostic.LINKING_DIAGNOSTIC,
+			"Couldn't resolve reference to Sensor 'a'"
 		)
 	}
 	
@@ -172,8 +173,8 @@ class DeviceLibraryValidationTest {
 			override sensor b
 		'''.parse.assertError(
 			Literals.SENSOR,
-			null,
-			"No such sensor b to override from parent"
+			Diagnostic.LINKING_DIAGNOSTIC,
+			"Couldn't resolve reference to Sensor 'b'."
 		)
 	}
 }

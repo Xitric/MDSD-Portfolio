@@ -26,7 +26,7 @@ class DeviceFactoryGenerator extends AbstractGenerator {
 	}
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-		val targetLanguage = resource.allContents.filter(Language).head
+		val targetLanguage = resource.allContents.filter(Language).head.name
 		val generator = languageGenerators.findFirst[language == targetLanguage]
 		generator.generate(resource, fsa, context)
 	}

@@ -7,13 +7,10 @@ import org.eclipse.xtext.ui.editor.quickfix.Fix
 import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionAcceptor
 import org.eclipse.xtext.validation.Issue
 import org.iot.devicefactory.deviceLibrary.Board
-import org.iot.devicefactory.deviceLibrary.DeviceLibraryFactory
 import org.iot.devicefactory.deviceLibrary.Library
-import org.iot.devicefactory.deviceLibrary.Sensor
 import org.iot.devicefactory.validation.DeviceLibraryIssueCodes
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
 
 /**
  * Custom quickfixes.
@@ -47,25 +44,6 @@ class DeviceLibraryQuickfixProvider extends CommonQuickfixProvider {
 		acceptor.accept(issue, 'Remove duplicate sensor', 'A sensor can only be declared once per board. Remove duplicate definitions', null) [
 			element, context |
 			element.getContainerOfType(Board).sensors.remove(element)
-		]
-	}
-	
-	@Fix(DeviceLibraryIssueCodes.NON_OVERRIDING_SENSOR)
-	def overrideParentSensor(Issue issue, IssueResolutionAcceptor acceptor) {
-		acceptor.accept(issue, 'Override parent sensor', 'When redeclaring a sensor in a child board, it must override the definition from the parent', null) [
-			element, context |
-			val board = element.getContainerOfType(Board)
-			val sensors = board.sensors
-			val sensorIndex = sensors.indexOf(element)
-			val parentSensor = (element as Sensor).parentSensor
-			
-			sensors.set(
-				sensorIndex,
-				DeviceLibraryFactory.eINSTANCE.createOverrideSensor() => [
-					name = parentSensor.name
-					preprocess = (element as Sensor).preprocess
-				]
-			)
 		]
 	}
 }

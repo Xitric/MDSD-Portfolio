@@ -7,17 +7,9 @@ import org.iot.devicefactory.deviceLibrary.Board
 import org.iot.devicefactory.deviceLibrary.OverrideSensor
 import org.iot.devicefactory.deviceLibrary.Sensor
 
-import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.CommonUtils.*
 
 class DeviceLibraryUtils {
-
-	static def getAllHierarchySensors(Board board) {
-		val allSensors = board.boardHierarchy.flatMap[sensors]
-		allSensors.filter [ sensor |
-			!allSensors.takeWhile[it !== sensor].exists[name == sensor.name]
-		]
-	}
 
 	static def getBoardHierarchy(Board board) {
 		val hierarchy = new ArrayList<Board>()
@@ -29,23 +21,19 @@ class DeviceLibraryUtils {
 		return hierarchy
 	}
 
-	static def getParentSensor(Sensor sensor) {
-		val board = sensor.getContainerOfType(Board)
-		board.parent.allHierarchySensors.findFirst[name == sensor.name]
+	static def String getName(Sensor sensor) {
+		switch sensor {
+			BaseSensor: sensor.name
+			OverrideSensor: sensor.parent.name
+		}
 	}
 	
 	static def Iterable<Variable> getInternalVariables(Sensor sensor) {
 		switch sensor {
 			BaseSensor:
 				sensor.input?.variables?.variables ?: emptyList
-			OverrideSensor: {
-				val parentSensor = sensor.parentSensor
-				if (parentSensor === null) {
-					return emptyList
-				} else {
-					parentSensor.variables
-				}
-			}
+			OverrideSensor:
+				sensor.parent?.variables ?: emptyList
 		}
 	}
 	

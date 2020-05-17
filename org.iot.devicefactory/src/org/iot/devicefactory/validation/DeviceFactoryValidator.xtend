@@ -9,6 +9,7 @@ import org.eclipse.xtext.validation.Check
 import org.eclipse.xtext.validation.CheckType
 import org.iot.devicefactory.deviceFactory.BaseSensor
 import org.iot.devicefactory.deviceFactory.Channel
+import org.iot.devicefactory.deviceFactory.ChildDevice
 import org.iot.devicefactory.deviceFactory.Data
 import org.iot.devicefactory.deviceFactory.Deployment
 import org.iot.devicefactory.deviceFactory.Device
@@ -50,16 +51,16 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 			error("There must be at least one device", Literals.DEPLOYMENT__DEVICES, MISSING_DEVICE)
 		}
 		
-		if (deployment.fog.size > 1) {
-			error("There can be at most one fog", Literals.DEPLOYMENT__FOG, AMBIGUOUS_FOG)
+		if (deployment.fogs.size > 1) {
+			error("There can be at most one fog", Literals.DEPLOYMENT__FOGS, AMBIGUOUS_FOG)
 		}
 		
-		if (deployment.cloud.size == 0) {
-			error("There must be a cloud", Literals.DEPLOYMENT__FOG, MISSING_CLOUD)
+		if (deployment.clouds.size == 0) {
+			error("There must be a cloud", Literals.DEPLOYMENT__FOGS, MISSING_CLOUD)
 		}
 		
-		if (deployment.cloud.size > 1) {
-			error("There can be at most one cloud", Literals.DEPLOYMENT__FOG, AMBIGUOUS_CLOUD)
+		if (deployment.clouds.size > 1) {
+			error("There can be at most one cloud", Literals.DEPLOYMENT__FOGS, AMBIGUOUS_CLOUD)
 		}
 	}
 	
@@ -105,19 +106,15 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	}
 	
 	@Check
-	def validateLegalOverride(OverrideSensor sensor) {
-		if (sensor.sensorHierarchy.size == 1) {
-			error('''No such sensor «sensor.definition.name» to override from parent''',
-				Literals.SENSOR__DEFINITION, ILLEGAL_OVERRIDE
-			)
-		}
-	}
-	
-	@Check
 	def validateChildSensorsOverride(BaseSensor sensor) {
-		if (sensor.sensorHierarchy.size > 1) {
-			error('''Redeclared sensor «sensor.definition.name» must override inherited definition from parent''',
-				Literals.SENSOR__DEFINITION, MISSING_OVERRIDE
+		val device = sensor.getContainerOfType(ChildDevice)
+		if (device === null) {
+			return
+		}
+		
+		if (device.parent.deviceHierarchy.exists[sensors.exists[name == sensor.name]]) {
+			error('''Redeclared sensor «sensor.name» must override inherited definition from parent''',
+				Literals.BASE_SENSOR__DEFINITION, MISSING_OVERRIDE
 			)
 		}
 	}
@@ -141,8 +138,14 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	@Check
 	def validateSensor(Sensor sensor) {
 		val device = sensor.getContainerOfType(Device)
-		if (device.sensors.takeWhile[it !== sensor].exists[definition === sensor.definition]) {
-			error('''Duplicate sensor definition «sensor.definition.name» in same device''', Literals.SENSOR__DEFINITION, DUPLICATE_SENSOR)
+		
+		if (device.sensors.takeWhile[it !== sensor].exists[name === sensor.name]) {
+			val feature = switch sensor {
+				BaseSensor: Literals.BASE_SENSOR__DEFINITION
+				OverrideSensor: Literals.OVERRIDE_SENSOR__PARENT
+			}
+			
+			error('''Duplicate sensor definition «sensor.name» in same device''', feature, DUPLICATE_SENSOR)
 		}
 	}
 	

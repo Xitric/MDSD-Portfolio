@@ -28,8 +28,8 @@ class DeviceFactoryFormatter extends CommonFormatter {
 		deployment.language.format
 		deployment.channels.forEach[format]
 		deployment.devices.forEach[format]
-		deployment.fog.forEach[format]
-		deployment.cloud.forEach[format]
+		deployment.fogs.forEach[format]
+		deployment.clouds.forEach[format]
 	}
 	
 	def dispatch void format(Library library, extension IFormattableDocument document) {

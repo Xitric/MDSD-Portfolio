@@ -1,6 +1,7 @@
 package org.iot.devicefactory.tests.validation
 
 import com.google.inject.Inject
+import org.eclipse.xtext.diagnostics.Diagnostic
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.util.ParseHelper
@@ -38,8 +39,8 @@ class DeviceFactoryInheritanceValidationTest {
 					out endpoint
 		'''.parse(resourceSet).assertError(
 			Literals.OVERRIDE_SENSOR,
-			DeviceFactoryIssueCodes.ILLEGAL_OVERRIDE,
-			"No such sensor thermistor to override from parent"
+			Diagnostic.LINKING_DIAGNOSTIC,
+			"Couldn't resolve reference to Sensor 'thermistor'"
 		)
 	}
 	
@@ -56,8 +57,8 @@ class DeviceFactoryInheritanceValidationTest {
 					out endpoint
 		'''.parse(resourceSet).assertError(
 			Literals.OVERRIDE_SENSOR,
-			DeviceFactoryIssueCodes.ILLEGAL_OVERRIDE,
-			"No such sensor barometer to override from parent"
+			Diagnostic.LINKING_DIAGNOSTIC,
+			"Couldn't resolve reference to Sensor 'barometer'"
 		)
 	}
 	

@@ -181,10 +181,10 @@ class DeviceFactoryPipelineValidationTest {
 		language python
 		channel inserial
 		channel endpoint
-		device controller board esp32
+		device controller board esp32_azure_v2
 			in inserial
-			sensor motion sample signal
-				data raw_pressure
+			sensor thermistor sample signal
+				data raw_temperature
 					out endpoint
 		device controller_child includes controller
 			sensor barometer sample signal
@@ -222,6 +222,52 @@ class DeviceFactoryPipelineValidationTest {
 			Literals.SENSOR_DATA_OUT,
 			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
 			"Incorrect output type from data pipeline. Expected (integer, integer), got integer"
+		)
+	}
+	
+	@Test def void testOutTypesNoHierarchy() {
+		val resourceSet = makePackagedBoardLibrary()
+		
+		'''
+		library iot.boards.*
+		language python
+		channel inserial
+		channel endpoint
+		device controllerA board esp32
+			in inserial
+			sensor barometer sample signal
+				data some_data
+					out endpoint map[b > 5 => a]
+		device controllerB board esp32_azure_v2
+			in inserial
+			sensor thermistor sample frequency 5
+				data some_data
+					out endpoint map[b > 5 && c < 0 => d]
+		'''.parse(resourceSet).assertNoError(DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE)
+	}
+	
+	@Test def void testOutsDifferentTypesNoHierarchy() {
+		val resourceSet = makePackagedBoardLibrary()
+		
+		'''
+		library iot.boards.*
+		language python
+		channel inserial
+		channel endpoint
+		device controllerA board esp32
+			in inserial
+			sensor barometer sample signal
+				data some_data
+					out endpoint map[b > 5 => a]
+		device controllerB board esp32_azure_v2
+			in inserial
+			sensor thermistor sample frequency 5
+				data some_data
+					out endpoint map[b => d]
+		'''.parse(resourceSet).assertError(
+			Literals.SENSOR_DATA_OUT,
+			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
+			"Incorrect output type from data pipeline. Expected boolean, got integer"
 		)
 	}
 }

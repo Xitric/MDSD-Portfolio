@@ -11,8 +11,6 @@ import org.iot.devicefactory.deviceLibrary.Sensor
 
 import static org.iot.devicefactory.typing.ExpressionType.*
 
-import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
-
 class DeviceLibraryTypeChecker {
 	
 	@Inject extension ExpressionTypeChecker
@@ -27,7 +25,7 @@ class DeviceLibraryTypeChecker {
 		
 		switch sensor {
 			BaseSensor: sensor.input.variables.typeOf
-			OverrideSensor: sensor.parentSensor.typeOf
+			OverrideSensor: sensor.parent.typeOf
 		}
 	}
 	

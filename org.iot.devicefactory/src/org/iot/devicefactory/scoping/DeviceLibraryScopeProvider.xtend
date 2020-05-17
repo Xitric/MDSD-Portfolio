@@ -5,9 +5,11 @@ package org.iot.devicefactory.scoping
 
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
+import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.iot.devicefactory.common.CommonPackage
+import org.iot.devicefactory.deviceLibrary.Board
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
 import org.iot.devicefactory.deviceLibrary.Library
 import org.iot.devicefactory.deviceLibrary.Sensor
@@ -28,6 +30,8 @@ class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
 		switch reference {
 			case Literals.BOARD__PARENT:
 				context.boardParentScope
+			case Literals.OVERRIDE_SENSOR__PARENT:
+				context.sensorScope
 			case CommonPackage.Literals.REFERENCE__VARIABLE:
 				context.referenceVariableScope
 			default:
@@ -38,6 +42,18 @@ class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
 	private def IScope getBoardParentScope(EObject context) {
 		val library = context.getContainerOfType(Library)
 		Scopes.scopeFor(library.boards.takeWhile[it !== context])
+	}
+	
+	private def IScope getSensorScope(EObject context) {
+		context.getContainerOfType(Board).parent.boardSensorScope
+	}
+	
+	private def IScope getBoardSensorScope(Board board) {
+		if (board === null) {
+			IScope.NULLSCOPE
+		} else {
+			Scopes.scopeFor(board.sensors, QualifiedName.wrapper[name], board.parent.boardSensorScope)
+		}
 	}
 	
 	private def IScope getReferenceVariableScope(EObject context) {

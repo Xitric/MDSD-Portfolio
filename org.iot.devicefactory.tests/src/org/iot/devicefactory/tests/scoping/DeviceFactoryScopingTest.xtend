@@ -34,7 +34,7 @@ class DeviceFactoryScopingTest {
 				data raw_pressure
 					out endpoint
 		'''.parse(resourceSet).devices.get(0).sensors.get(0).assertScope(
-			Literals.SENSOR__DEFINITION,
+			Literals.BASE_SENSOR__DEFINITION,
 			#["barometer"]
 		)
 	}
@@ -51,7 +51,7 @@ class DeviceFactoryScopingTest {
 				data raw_pressure
 					out endpoint
 		'''.parse(resourceSet).devices.get(0).sensors.get(0).assertScope(
-			Literals.SENSOR__DEFINITION,
+			Literals.BASE_SENSOR__DEFINITION,
 			#["barometer", "thermistor"]
 		)
 	}
@@ -73,7 +73,7 @@ class DeviceFactoryScopingTest {
 				data raw_pressure
 					out endpoint
 		'''.parse(resourceSet).devices.get(1).sensors.get(0).assertScope(
-			Literals.SENSOR__DEFINITION,
+			Literals.BASE_SENSOR__DEFINITION,
 			#["barometer", "thermistor"]
 		)
 	}
@@ -89,7 +89,7 @@ class DeviceFactoryScopingTest {
 				data raw_pressure
 					out endpoint
 		'''.parse(resourceSet).devices.get(0).sensors.get(0).assertScope(
-			Literals.SENSOR__DEFINITION,
+			Literals.BASE_SENSOR__DEFINITION,
 			#[]
 		)
 	}

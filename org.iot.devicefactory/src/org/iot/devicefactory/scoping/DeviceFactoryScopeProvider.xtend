@@ -5,17 +5,21 @@ package org.iot.devicefactory.scoping
 
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
+import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.iot.devicefactory.common.CommonPackage
+import org.iot.devicefactory.deviceFactory.BaseDevice
+import org.iot.devicefactory.deviceFactory.ChildDevice
 import org.iot.devicefactory.deviceFactory.Device
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.deviceFactory.Sensor
+import org.iot.devicefactory.deviceLibrary.Board
+import org.iot.devicefactory.util.DeviceLibraryUtils
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.CommonUtils.*
 import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
-import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
 
 /**
  * This class contains custom scoping description.
@@ -27,8 +31,10 @@ class DeviceFactoryScopeProvider extends AbstractDeviceFactoryScopeProvider {
 	
 	override getScope(EObject context, EReference reference) {
 		switch reference {
-			case Literals.SENSOR__DEFINITION:
-				context.sensorNameScope
+			case Literals.BASE_SENSOR__DEFINITION:
+				context.sensorDefinitionScope
+			case Literals.OVERRIDE_SENSOR__PARENT:
+				context.parentSensorScope
 			case CommonPackage.Literals.REFERENCE__VARIABLE:
 				context.referenceVariableScope
 			default:
@@ -36,13 +42,33 @@ class DeviceFactoryScopeProvider extends AbstractDeviceFactoryScopeProvider {
 		}
 	}
 	
-	private def IScope getSensorNameScope(EObject context) {
-		val board = context.getContainerOfType(Device).board
-		if (board === null) {
+	private def IScope getSensorDefinitionScope(EObject context) {
+		context.getContainerOfType(Device).board.boardSensorScope
+	}
+	
+	private def IScope getBoardSensorScope(Board board) {
+		if (board === null || board.eIsProxy) {
 			IScope.NULLSCOPE
 		} else {
-			Scopes.scopeFor(board.allHierarchySensors)
+			Scopes.scopeFor(board.sensors, QualifiedName.wrapper[DeviceLibraryUtils.getName(it)], board.parent.boardSensorScope)
 		}
+	}
+	
+	private def IScope getParentSensorScope(EObject context) {
+		val device = context.getContainerOfType(Device)
+		switch device {
+			ChildDevice: device.parent.deviceSensorScope
+			default: IScope.NULLSCOPE
+		}
+	}
+	
+	private def IScope getDeviceSensorScope(Device device) {
+		val outerScope = switch device {
+			ChildDevice: device.parent.deviceSensorScope
+			default: IScope.NULLSCOPE
+		}
+		
+		Scopes.scopeFor(device.sensors.filter[name !== null], QualifiedName.wrapper[name], outerScope)
 	}
 	
 	private def IScope getReferenceVariableScope(EObject context) {

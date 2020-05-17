@@ -14,7 +14,7 @@ Deployment:
 	// We then use a validator to ensure that the correct number of each has
 	// been specified. This would have been difficult to express in the grammar
 	// itself
-	(channels+=Channel | devices+=Device | fog+=Fog | cloud+=Cloud)*
+	(channels+=Channel | devices+=Device | fogs+=Fog | clouds+=Cloud)*
 ;
 
 Library:
@@ -55,7 +55,7 @@ BaseSensor:
 ;
 
 OverrideSensor:
-	'override' 'sensor' definition=[Library::Sensor] (sampler=Sampler)?
+	'override' 'sensor' parent=[Sensor] (sampler=Sampler)?
 ;
 
 SensorData:

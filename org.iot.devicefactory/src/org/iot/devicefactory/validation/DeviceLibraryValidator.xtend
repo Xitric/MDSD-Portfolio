@@ -53,25 +53,22 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 	def validateNoDuplicateSensors(Sensor sensor) {
 		val board = sensor.getContainerOfType(Board)
 		if (board.sensors.takeWhile[it !== sensor].exists[it.name == sensor.name]) {
-			error('''Duplicate sensor definition «sensor.name» in same board''', Literals.SENSOR__NAME, DUPLICATE_SENSOR)
+			val feature = switch sensor {
+				BaseSensor: Literals.BASE_SENSOR__NAME
+				OverrideSensor: Literals.OVERRIDE_SENSOR__PARENT
+			}
+			
+			error('''Duplicate sensor definition «sensor.name» in same board''', feature, DUPLICATE_SENSOR)
 		}
 	}
 	
 	@Check
 	def validateChildSensorsOverride(BaseSensor sensor) {
 		val board = sensor.getContainerOfType(Board)
-		if (board.parent.allHierarchySensors.exists[name == sensor.name]) {
+		if (board.parent.boardHierarchy.exists[sensors.exists[name == sensor.name]]) {
 			error('''Redeclared sensor «sensor.name» must override inherited definition from parent''',
-				Literals.SENSOR__NAME, NON_OVERRIDING_SENSOR
+				Literals.BASE_SENSOR__NAME, NON_OVERRIDING_SENSOR
 			)
-		}
-	}
-	
-	@Check
-	def validateLegalOverride(OverrideSensor sensor) {
-		val board = sensor.getContainerOfType(Board)
-		if (! board.parent.allHierarchySensors.exists[name == sensor.name]) {
-			error('''No such sensor «sensor.name» to override from parent''', Literals.SENSOR__NAME)
 		}
 	}
 }
