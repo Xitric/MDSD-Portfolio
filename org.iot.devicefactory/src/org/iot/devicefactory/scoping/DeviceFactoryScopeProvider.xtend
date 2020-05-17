@@ -23,6 +23,7 @@ import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.CommonUtils.*
 import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
+import org.iot.devicefactory.deviceFactory.Transformation
 
 /**
  * This class contains custom scoping description.
@@ -80,7 +81,12 @@ class DeviceFactoryScopeProvider extends AbstractDeviceFactoryScopeProvider {
 		val expressionScope = context.variables
 		if (expressionScope.empty) {
 			val sensor = context.getContainerOfType(Sensor)
-			Scopes.scopeFor(sensor.variables)
+			if (sensor !== null) {
+				Scopes.scopeFor(sensor.variables)
+			} else {
+				val transformation = context.getContainerOfType(Transformation)
+				Scopes.scopeFor(transformation.variables.variables)
+			}
 		} else {
 			Scopes.scopeFor(expressionScope)
 		}

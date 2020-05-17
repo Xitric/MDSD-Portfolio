@@ -1,5 +1,6 @@
 package org.iot.devicefactory.typing
 
+import com.google.inject.Inject
 import org.iot.devicefactory.common.Add
 import org.iot.devicefactory.common.Conditional
 import org.iot.devicefactory.common.Div
@@ -18,9 +19,9 @@ import org.iot.devicefactory.common.Window
 
 import static org.iot.devicefactory.typing.ExpressionType.*
 
-import static extension org.iot.devicefactory.typing.ReferenceTypeProvider.*
-
 class ExpressionTypeChecker {
+
+	@Inject extension ReferenceTypeProvider
 
 	/**
 	 * Determines if the provided type is either an integer or a double.

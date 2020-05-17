@@ -293,7 +293,7 @@ class DeviceFactoryPipelineValidationTest {
 		'''.parse(resourceSet).assertError(
 			Literals.TRANSFORMATION_OUT,
 			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
-			"Incorrect output type from data pipeline. Expected boolean, got integer"
+			"Incorrect output type from data pipeline. Expected boolean, got double"
 		)
 	}
 	
@@ -319,9 +319,9 @@ class DeviceFactoryPipelineValidationTest {
 				data pressure
 					out map[h => d]
 		'''.parse(resourceSet).assertError(
-			Literals.SENSOR_OUT,
+			Literals.TRANSFORMATION_OUT,
 			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
-			"Incorrect output type from data pipeline. Expected integer, got boolean"
+			"Incorrect output type from data pipeline. Expected double, got boolean"
 		)
 	}
 }

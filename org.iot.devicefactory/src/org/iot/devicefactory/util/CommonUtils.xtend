@@ -16,6 +16,7 @@ class CommonUtils {
 		switch variableDeclaration {
 			Variable: variableDeclaration.singleton
 			Variables: variableDeclaration.vars
+			default: emptyList
 		}
 	}
 	
