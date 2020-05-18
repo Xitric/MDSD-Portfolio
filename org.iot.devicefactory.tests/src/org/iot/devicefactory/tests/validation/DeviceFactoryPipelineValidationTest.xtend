@@ -190,11 +190,11 @@ class DeviceFactoryPipelineValidationTest {
 		device controller_child includes controller
 			sensor barometer sample signal
 				data raw_pressure
-					out endpoint map[b > 5 => a]
+					out endpoint map[p > 5 => a]
 		device controller_grandchild includes controller_child
 			override sensor barometer
 				data raw_pressure
-					out endpoint map[b => a]
+					out endpoint map[p => a]
 		'''.parse(resourceSet).assertError(
 			Literals.SENSOR_OUT,
 			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,

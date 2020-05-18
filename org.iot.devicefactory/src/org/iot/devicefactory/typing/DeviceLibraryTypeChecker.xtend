@@ -12,11 +12,8 @@ import static org.iot.devicefactory.typing.ExpressionType.*
 class DeviceLibraryTypeChecker {
 	
 	def ExpressionType typeOf(Sensor sensor, extension ExpressionTypeChecker typeChecker) {
-		if (sensor.preprocess !== null) {
-			val preprocessType = sensor.preprocess.pipeline.outputTypeOfPipeline
-			if (preprocessType !== VOID) {
-				return preprocessType
-			}
+		if (sensor.preprocess?.pipeline !== null) {
+			return sensor.preprocess.pipeline.outputTypeOfPipeline
 		}
 		
 		switch sensor {

@@ -23,12 +23,10 @@ class DeviceFactoryTypeChecker {
 	}
 	
 	def typeOf(Out output, extension ExpressionTypeChecker typeChecker) {
-		val pipelineType = output.pipeline.outputTypeOfPipeline
-		
-		if (pipelineType === ExpressionType.VOID) {
-			return output.getContainerOfType(Sensor).definition.typeOf(typeChecker)
+		if (output.pipeline === null) {
+			output.getContainerOfType(Sensor).definition.typeOf(typeChecker)
+		} else {
+			output.pipeline.outputTypeOfPipeline
 		}
-		
-		return pipelineType
 	}
 }

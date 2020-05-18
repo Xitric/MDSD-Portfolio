@@ -185,20 +185,11 @@ class ExpressionTypeChecker {
 	
 	// Gets the output of a complete pipeline
 	def outputTypeOfPipeline(Pipeline pipeline) {
-		var Pipeline lastTypeChanger = null
-		
-		var current = pipeline
-		while (current !== null) {
-			switch current {
-				Map, Window: lastTypeChanger = current
-			}
-			current = current.next
+		var last = pipeline
+		while (last.next !== null) {
+			last = last.next
 		}
 		
-		switch lastTypeChanger {
-			Map: lastTypeChanger.expression.typeOf
-			Window: DOUBLE
-			default: VOID
-		}
+		last.typeOfPipeline
 	}
 }

@@ -34,6 +34,8 @@ class ContextTypeProvider {
 		if (transformation !== null) {
 			return transformation.getTransformationContextType(typeChecker)
 		}
+		
+		return ExpressionType.VOID
 	}
 	
 	private def getLibrarySensorContextType(Sensor sensor, ExpressionTypeChecker typeChecker) {
