@@ -8,6 +8,7 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.iot.devicefactory.common.CommonPackage.Literals
 import org.iot.devicefactory.common.Pipeline
 import org.iot.devicefactory.tests.CommonInjectorProvider
+import org.iot.devicefactory.validation.CommonIssueCodes
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
@@ -24,11 +25,11 @@ class CommonValidationTest {
 		'''.parse.assertNoErrors
 		
 		'''
-		filter[true ? 5 : 5e8]
+		map[true ? 5 : 5e8 => a]
 		'''.parse.assertNoErrors
 		
 		'''
-		filter[true ? 5.75 : 0x3b]
+		map[true ? 5.75 : 0x3b => a]
 		'''.parse.assertNoErrors
 		
 		'''
@@ -229,6 +230,58 @@ class CommonValidationTest {
 			Literals.TUPLE,
 			null,
 			"Tuples are only allowed at the top-level. This tuple contains a nested tuple: (integer, string)"
+		)
+	}
+	
+	@Test def void testFilter() {
+		'''
+		filter[true]
+		'''.parse.assertNoErrors
+		
+		'''
+		filter[5]
+		'''.parse.assertError(
+			Literals.FILTER,
+			null,
+			"Expected boolean, got integer"
+		)
+	}
+	
+	@Test def void testWindow() {
+		'''
+		map[5 => a].window[10].mean
+		'''.parse.assertNoErrors
+		
+		'''
+		map[5e8 => a].window[10].mean
+		'''.parse.assertNoErrors
+		
+		'''
+		map[true => a].window[10].mean
+		'''.parse.assertError(
+			Literals.WINDOW,
+			CommonIssueCodes.ILLEGAL_WINDOW_INPUT,
+			"Window operations are only applicable on integer or double types, but is called on boolean"
+		)
+		
+		'''
+		map["Hello, world!" => a].window[10].mean
+		'''.parse.assertError(
+			Literals.WINDOW,
+			CommonIssueCodes.ILLEGAL_WINDOW_INPUT,
+			"Window operations are only applicable on integer or double types, but is called on string"
+		)
+		
+		'''
+		map[(5, 5e8) => (a, b)].window[10].mean
+		'''.parse.assertNoErrors
+		
+		'''
+		map[(5, true) => a].window[10].mean
+		'''.parse.assertError(
+			Literals.WINDOW,
+			CommonIssueCodes.ILLEGAL_WINDOW_INPUT,
+			"Window operations are only applicable on integer or double types, but is called on (integer, boolean)"
 		)
 	}
 }

@@ -6,6 +6,7 @@ import org.iot.devicefactory.common.Conditional
 import org.iot.devicefactory.common.Div
 import org.iot.devicefactory.common.Exponent
 import org.iot.devicefactory.common.Expression
+import org.iot.devicefactory.common.Filter
 import org.iot.devicefactory.common.Map
 import org.iot.devicefactory.common.Mul
 import org.iot.devicefactory.common.Negation
@@ -22,6 +23,7 @@ import static org.iot.devicefactory.typing.ExpressionType.*
 class ExpressionTypeChecker {
 
 	@Inject extension ReferenceTypeProvider
+	@Inject extension ContextTypeProvider
 
 	/**
 	 * Determines if the provided type is either an integer or a double.
@@ -150,7 +152,39 @@ class ExpressionTypeChecker {
 		BOOLEAN
 	}
 	
-	def typeOfPipeline(Pipeline pipeline) {
+	// Fall back in case of null invocations
+	def dispatch ExpressionType typeOf(Void exp) {
+		VOID
+	}
+	
+	// Gets the input of a single pipeline operation
+	def inputTypeOfPipeline(Pipeline pipeline) {
+		val precedingPipeline = pipeline.eContainer
+		switch precedingPipeline {
+			Pipeline: precedingPipeline.typeOfPipeline
+			default: pipeline.getContextType(this)
+		}
+	}
+	
+	// Gets the output of a single pipeline operation
+	def dispatch ExpressionType typeOfPipeline(Filter filter) {
+		filter.inputTypeOfPipeline
+	}
+	
+	def dispatch ExpressionType typeOfPipeline(Map map) {
+		map.expression.typeOf
+	}
+	
+	def dispatch ExpressionType typeOfPipeline(Window window) {
+		val inputType = window.inputTypeOfPipeline
+		switch inputType {
+			TupleExpressionType: TUPLE(DOUBLE, inputType.elements.size)
+			ExpressionType: DOUBLE
+		}
+	}
+	
+	// Gets the output of a complete pipeline
+	def outputTypeOfPipeline(Pipeline pipeline) {
 		var Pipeline lastTypeChanger = null
 		
 		var current = pipeline
@@ -166,10 +200,5 @@ class ExpressionTypeChecker {
 			Window: DOUBLE
 			default: VOID
 		}
-	}
-	
-	// Fall back in case of null invocations
-	def dispatch ExpressionType typeOf(Void exp) {
-		VOID
 	}
 }

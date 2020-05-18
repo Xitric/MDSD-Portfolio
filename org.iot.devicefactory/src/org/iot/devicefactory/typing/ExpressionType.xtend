@@ -1,5 +1,7 @@
 package org.iot.devicefactory.typing
 
+import java.util.Arrays
+
 class ExpressionType {
 
 	public static val INTEGER = new ExpressionType("integer")
@@ -10,6 +12,12 @@ class ExpressionType {
 
 	static def ExpressionType TUPLE(ExpressionType... elements) {
 		new TupleExpressionType(elements)
+	}
+	
+	static def ExpressionType TUPLE(ExpressionType element, int repeat) {
+		val ExpressionType[] type = ArrayLiterals.newArrayOfSize(repeat)
+		Arrays.fill(type, element)
+		TUPLE(type)
 	}
 
 	final String tag;

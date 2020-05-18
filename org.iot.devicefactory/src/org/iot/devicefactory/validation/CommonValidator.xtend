@@ -14,6 +14,7 @@ import org.iot.devicefactory.common.Div
 import org.iot.devicefactory.common.Equal
 import org.iot.devicefactory.common.Exponent
 import org.iot.devicefactory.common.Expression
+import org.iot.devicefactory.common.Filter
 import org.iot.devicefactory.common.GreaterThan
 import org.iot.devicefactory.common.GreaterThanEqual
 import org.iot.devicefactory.common.LessThan
@@ -27,9 +28,12 @@ import org.iot.devicefactory.common.Tuple
 import org.iot.devicefactory.common.Unequal
 import org.iot.devicefactory.common.Variable
 import org.iot.devicefactory.common.Variables
+import org.iot.devicefactory.common.Window
 import org.iot.devicefactory.typing.ExpressionType
 import org.iot.devicefactory.typing.ExpressionTypeChecker
 import org.iot.devicefactory.typing.TupleExpressionType
+
+import static org.iot.devicefactory.validation.CommonIssueCodes.*
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 
@@ -178,9 +182,34 @@ class CommonValidator extends AbstractCommonValidator {
 		val actual = exp.typeOf as TupleExpressionType
 		for (ExpressionType type: actual.elements) {
 			if (type instanceof TupleExpressionType) {
-				error('''Tuples are only allowed at the top-level. This tuple contains a nested tuple: «type»''', Literals.TUPLE__VALUES)
+				error(
+					'''Tuples are only allowed at the top-level. This tuple contains a nested tuple: «type»''',
+					Literals.TUPLE__VALUES
+				)
 				return
 			}
+		}
+	}
+	
+	@Check
+	def validateFilter(Filter filter) {
+		filter.expression.validateType(ExpressionType.BOOLEAN, Literals.FILTER__EXPRESSION)
+	}
+	
+	@Check
+	def validateWindow(Window window) {
+		val inputType = window.inputTypeOfPipeline
+		val error = switch inputType {
+			TupleExpressionType: inputType.elements.exists[! isNumberType]
+			default: ! inputType.isNumberType
+		}
+		
+		if (error) {
+			error(
+				'''Window operations are only applicable on integer or double types, but is called on «inputType»''',
+				Literals.WINDOW__EXECUTE,
+				ILLEGAL_WINDOW_INPUT
+			)
 		}
 	}
 	
@@ -189,7 +218,10 @@ class CommonValidator extends AbstractCommonValidator {
 		val variables = variable.getContainerOfType(Variables)
 		if (variables !== null) {
 			if (variables.vars.takeWhile[it !== variable].exists[name == variable.name]) {
-				error('''The variable «variable.name» is a duplicate. All variable names in a tuple must be unique''', Literals.VARIABLE__NAME)
+				error(
+					'''The variable «variable.name» is a duplicate. All variable names in a tuple must be unique''',
+					Literals.VARIABLE__NAME
+				)
 			}
 		}
 	}

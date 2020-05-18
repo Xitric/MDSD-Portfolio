@@ -9,6 +9,7 @@ import org.iot.devicefactory.deviceFactory.Deployment
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.tests.MultiLanguageInjectorProvider
 import org.iot.devicefactory.tests.TestUtil
+import org.iot.devicefactory.validation.CommonIssueCodes
 import org.iot.devicefactory.validation.DeviceFactoryIssueCodes
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
@@ -323,5 +324,57 @@ class DeviceFactoryPipelineValidationTest {
 			DeviceFactoryIssueCodes.INCORRECT_OUT_TYPE,
 			"Incorrect output type from data pipeline. Expected double, got boolean"
 		)
+	}
+	
+	@Test def void testWindowPipelineRoot() {
+		val resourceSet = makePackagedBoardLibrary()
+		
+		'''
+		library iot.boards.*
+		language python
+		channel endpoint
+		device controllerA board esp32
+			sensor barometer sample signal
+				data pressure
+					out endpoint window[10].mean
+		'''.parse(resourceSet).assertNoError(CommonIssueCodes.ILLEGAL_WINDOW_INPUT)
+		
+		'''
+		library iot.boards.*
+		language python
+		channel endpoint
+		device controllerA board esp32_azure_v2
+			sensor thermistor sample signal
+				data pressure
+					out endpoint window[10].mean
+		'''.parse(resourceSet).assertNoError(CommonIssueCodes.ILLEGAL_WINDOW_INPUT)
+	}
+	
+	@Test def void testWindowPipelineAfterFilter() {
+		val resourceSet = makePackagedBoardLibrary()
+		
+		'''
+		library iot.boards.*
+		language python
+		channel endpoint
+		device controllerA board esp32
+			sensor barometer sample signal
+				data pressure
+					out endpoint filter[true].window[10].mean
+		'''.parse(resourceSet).assertNoError(CommonIssueCodes.ILLEGAL_WINDOW_INPUT)
+	}
+	
+	@Test def void testWindowPipelineAfterWindow() {
+		val resourceSet = makePackagedBoardLibrary()
+		
+		'''
+		library iot.boards.*
+		language python
+		channel endpoint
+		device controllerA board esp32
+			sensor barometer sample signal
+				data pressure
+					out endpoint window[10].max.window[10].mean
+		'''.parse(resourceSet).assertNoError(CommonIssueCodes.ILLEGAL_WINDOW_INPUT)
 	}
 }

@@ -21,6 +21,7 @@ import org.iot.devicefactory.deviceFactory.OverrideSensor
 import org.iot.devicefactory.deviceFactory.Sensor
 import org.iot.devicefactory.generator.DeviceFactoryGenerator
 import org.iot.devicefactory.typing.DeviceFactoryTypeChecker
+import org.iot.devicefactory.typing.ExpressionTypeChecker
 import org.iot.devicefactory.util.IndexUtils
 
 import static org.iot.devicefactory.validation.DeviceFactoryIssueCodes.*
@@ -37,8 +38,9 @@ import static extension org.iot.devicefactory.util.QualifiedNameUtils.*
 class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	
 	@Inject DeviceFactoryGenerator factoryGenerator
+	@Inject ExpressionTypeChecker typeChecker
 	@Inject extension IndexUtils
-	@Inject extension IQualifiedNameConverter 
+	@Inject extension IQualifiedNameConverter
 	@Inject extension DeviceFactoryTypeChecker
 	
 	@Check(CheckType.NORMAL)
@@ -93,8 +95,8 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	
 	@Check
 	def validateOutTypes(Out output) {
-		val expectedType = output.getContainerOfType(Data).typeOf
-		val actualType = output.typeOf
+		val expectedType = output.getContainerOfType(Data).typeOf(typeChecker)
+		val actualType = output.typeOf(typeChecker)
 		
 		if (actualType != expectedType) {
 			error(

@@ -1,7 +1,5 @@
 package org.iot.devicefactory.typing
 
-import com.google.inject.Inject
-import java.util.Arrays
 import org.iot.devicefactory.common.Variable
 import org.iot.devicefactory.common.VariableDeclaration
 import org.iot.devicefactory.common.Variables
@@ -13,11 +11,9 @@ import static org.iot.devicefactory.typing.ExpressionType.*
 
 class DeviceLibraryTypeChecker {
 	
-	@Inject extension ExpressionTypeChecker
-	
-	def ExpressionType typeOf(Sensor sensor) {
+	def ExpressionType typeOf(Sensor sensor, extension ExpressionTypeChecker typeChecker) {
 		if (sensor.preprocess !== null) {
-			val preprocessType = sensor.preprocess.pipeline.typeOfPipeline
+			val preprocessType = sensor.preprocess.pipeline.outputTypeOfPipeline
 			if (preprocessType !== VOID) {
 				return preprocessType
 			}
@@ -25,18 +21,14 @@ class DeviceLibraryTypeChecker {
 		
 		switch sensor {
 			BaseSensor: sensor.input.variables.typeOf
-			OverrideSensor: sensor.parent.typeOf
+			OverrideSensor: sensor.parent.typeOf(typeChecker)
 		}
 	}
 	
-	private def typeOf(VariableDeclaration variableDeclaration) {
+	def typeOf(VariableDeclaration variableDeclaration) {
 		switch variableDeclaration {
 			Variable: INTEGER
-			Variables: {
-				val ExpressionType[] type = ArrayLiterals.newArrayOfSize(variableDeclaration.vars.size)
-				Arrays.fill(type, INTEGER)
-				TUPLE(type)
-			}
+			Variables: TUPLE(INTEGER, variableDeclaration.vars.size)
 		}
 	}
 }

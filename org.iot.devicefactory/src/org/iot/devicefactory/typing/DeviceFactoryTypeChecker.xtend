@@ -12,22 +12,21 @@ import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
 
 class DeviceFactoryTypeChecker {
 	
-	@Inject extension ExpressionTypeChecker
 	@Inject extension DeviceLibraryTypeChecker
 	
-	def typeOf(Data data) {
+	def typeOf(Data data, ExpressionTypeChecker typeChecker) {
 		val baseData = data.baseData
 		switch baseData {
-			SensorData: baseData.outputs.head.typeOf
-			TransformationData: baseData.outputs.head.typeOf
+			SensorData: baseData.outputs.head.typeOf(typeChecker)
+			TransformationData: baseData.outputs.head.typeOf(typeChecker)
 		}
 	}
 	
-	def typeOf(Out output) {
-		val pipelineType = output.pipeline.typeOfPipeline
+	def typeOf(Out output, extension ExpressionTypeChecker typeChecker) {
+		val pipelineType = output.pipeline.outputTypeOfPipeline
 		
 		if (pipelineType === ExpressionType.VOID) {
-			return output.getContainerOfType(Sensor).definition.typeOf
+			return output.getContainerOfType(Sensor).definition.typeOf(typeChecker)
 		}
 		
 		return pipelineType

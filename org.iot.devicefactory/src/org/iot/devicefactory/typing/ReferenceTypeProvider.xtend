@@ -1,5 +1,6 @@
 package org.iot.devicefactory.typing
 
+import com.google.inject.Inject
 import org.iot.devicefactory.common.Map
 import org.iot.devicefactory.common.Reference
 import org.iot.devicefactory.common.Variable
@@ -10,8 +11,6 @@ import org.iot.devicefactory.deviceLibrary.BaseSensor
 import static org.iot.devicefactory.typing.ExpressionType.*
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
-import com.google.inject.Inject
 
 class ReferenceTypeProvider {
 	
@@ -32,7 +31,7 @@ class ReferenceTypeProvider {
 		
 		val transformation = variable.getContainerOfType(Transformation)
 		if (transformation !== null) {
-			return variable.getTransformationType(transformation)
+			return variable.getTransformationType(transformation, typeChecker)
 		}
 
 		getFallbackType()
@@ -61,8 +60,8 @@ class ReferenceTypeProvider {
 		INTEGER
 	}
 	
-	private def getTransformationType(Variable variable, Transformation transformation) {
-		val dataType = transformation.provider.typeOf
+	private def getTransformationType(Variable variable, Transformation transformation, extension ExpressionTypeChecker typeChecker) {
+		val dataType = transformation.provider.typeOf(typeChecker)
 		
 		if (variable.eContainer instanceof Variables) {
 			val index = (variable.eContainer as Variables).vars.indexOf(variable)
