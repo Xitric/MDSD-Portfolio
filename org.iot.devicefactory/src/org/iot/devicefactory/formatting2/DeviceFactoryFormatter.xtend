@@ -4,19 +4,24 @@
 package org.iot.devicefactory.formatting2
 
 import org.eclipse.xtext.formatting2.IFormattableDocument
+import org.iot.devicefactory.common.Pipeline
 import org.iot.devicefactory.deviceFactory.BaseDevice
 import org.iot.devicefactory.deviceFactory.BaseSensor
 import org.iot.devicefactory.deviceFactory.Channel
 import org.iot.devicefactory.deviceFactory.ChildDevice
 import org.iot.devicefactory.deviceFactory.Cloud
 import org.iot.devicefactory.deviceFactory.Deployment
+import org.iot.devicefactory.deviceFactory.Device
+import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.deviceFactory.Fog
+import org.iot.devicefactory.deviceFactory.FrequencySampler
 import org.iot.devicefactory.deviceFactory.Language
 import org.iot.devicefactory.deviceFactory.Library
 import org.iot.devicefactory.deviceFactory.OverrideSensor
-import org.iot.devicefactory.deviceFactory.Sampler
+import org.iot.devicefactory.deviceFactory.Sensor
 import org.iot.devicefactory.deviceFactory.SensorData
 import org.iot.devicefactory.deviceFactory.SensorOut
+import org.iot.devicefactory.deviceFactory.SignalSampler
 import org.iot.devicefactory.deviceFactory.Transformation
 import org.iot.devicefactory.deviceFactory.TransformationData
 import org.iot.devicefactory.deviceFactory.TransformationOut
@@ -33,65 +38,146 @@ class DeviceFactoryFormatter extends CommonFormatter {
 	}
 	
 	def dispatch void format(Library library, extension IFormattableDocument document) {
-		
+		library.regionFor.keyword("library").prepend[noSpace].append[oneSpace]
+		library.regionFor.feature(Literals.LIBRARY__IMPORTED_NAMESPACE).append[setNewLines(2)]
 	}
 	
 	def dispatch void format(Language language, extension IFormattableDocument document) {
-		
+		language.regionFor.keyword("language").prepend[noSpace].append[oneSpace]
+		language.regionFor.feature(Literals.LANGUAGE__NAME).append[setNewLines(2)]
 	}
 	
 	def dispatch void format(Channel channel, extension IFormattableDocument document) {
+		channel.regionFor.keyword("channel").prepend[noSpace].append[oneSpace]
 		
+		val nextRegion = channel.regionFor.feature(Literals.CHANNEL__NAME).nextSemanticRegion?.semanticElement
+		switch nextRegion {
+			Channel: channel.regionFor.feature(Literals.CHANNEL__NAME).append[newLine]
+			default: channel.regionFor.feature(Literals.CHANNEL__NAME).append[setNewLines(2)]
+		}
 	}
 
 	def dispatch void format(BaseDevice baseDevice, extension IFormattableDocument document) {
-		// TODO: format HiddenRegions around keywords, attributes, cross references, etc. 
-//		for (sensor : device.sensors) {
-//			sensor.format
-//		}
+		baseDevice.formatDevice(document)
+		baseDevice.regionFor.keyword("board").surround[oneSpace]
+		baseDevice.regionFor.feature(Literals.BASE_DEVICE__BOARD).prepend[oneSpace].append[newLine]
 	}
 	
 	def dispatch void format(ChildDevice childDevice, extension IFormattableDocument document) {
+		childDevice.formatDevice(document)
+		childDevice.regionFor.keyword("includes").surround[oneSpace]
+		childDevice.regionFor.feature(Literals.CHILD_DEVICE__PARENT).prepend[oneSpace].append[newLine]
+	}
+	
+	def void formatDevice(Device device, extension IFormattableDocument document) {
+		device.regionFor.keyword("device").prepend[noSpace].append[oneSpace]
+		device.regionFor.feature(Literals.DEVICE__NAME).surround[oneSpace]
 		
+		device.interior[indent]
+		
+		device.regionFor.keyword("in").prepend[noSpace].append[oneSpace]
+		device.regionFor.feature(Literals.DEVICE__INPUT).prepend[oneSpace].append[setNewLines(2)]
+		device.sensors.forEach[format]
 	}
 	
 	def dispatch void format(BaseSensor baseSensor, extension IFormattableDocument document) {
-		
+		baseSensor.formatSensor(document)
+		baseSensor.regionFor.keyword("sensor").prepend[noSpace]
+		baseSensor.regionFor.feature(Literals.BASE_SENSOR__DEFINITION).surround[oneSpace]
 	}
 	
 	def dispatch void format(OverrideSensor overrideSensor, extension IFormattableDocument document) {
+		overrideSensor.formatSensor(document)
+		overrideSensor.regionFor.keyword("override").prepend[noSpace].append[oneSpace]
+		overrideSensor.regionFor.keyword("sensor").prepend[oneSpace]
+		overrideSensor.regionFor.feature(Literals.OVERRIDE_SENSOR__PARENT).prepend[oneSpace]
 		
+		if (overrideSensor.sampler === null) {
+			overrideSensor.regionFor.feature(Literals.OVERRIDE_SENSOR__PARENT).append[newLine]
+		} else {
+			overrideSensor.regionFor.feature(Literals.OVERRIDE_SENSOR__PARENT).append[oneSpace]
+		}
+	}
+	
+	def void formatSensor(Sensor sensor, extension IFormattableDocument document) {
+		sensor.regionFor.keyword("sensor").append[oneSpace]
+		sensor.sampler?.format
+		
+		sensor.interior[indent]
+		
+		sensor.datas.forEach[format]
 	}
 	
 	def dispatch void format(SensorData sensorData, extension IFormattableDocument document) {
+		sensorData.regionFor.keyword("data").prepend[noSpace].append[oneSpace]
+		sensorData.regionFor.feature(Literals.DATA__NAME).prepend[oneSpace].append[newLine]
 		
+		sensorData.interior[indent]
+		
+		sensorData.outputs.forEach[format]
 	}
 	
-	def dispatch void format(SensorOut sensorDataOut, extension IFormattableDocument document) {
+	def dispatch void format(SensorOut sensorOut, extension IFormattableDocument document) {
+		sensorOut.regionFor.keyword("out").prepend[noSpace].append[oneSpace]
+		sensorOut.regionFor.feature(Literals.SENSOR_OUT__CHANNEL).prepend[oneSpace]
 		
+		val nextRegion = sensorOut.regionFor.feature(Literals.SENSOR_OUT__CHANNEL).nextSemanticRegion?.semanticElement
+		switch nextRegion {
+			Pipeline: sensorOut.regionFor.feature(Literals.SENSOR_OUT__CHANNEL).append[oneSpace]
+			default: sensorOut.regionFor.feature(Literals.SENSOR_OUT__CHANNEL).append[setNewLines(2)]
+		}
+		
+		sensorOut.pipeline?.format
+		sensorOut.pipeline?.append[setNewLines(2)]
 	}
 	
-	def dispatch void format(Sampler sampler, extension IFormattableDocument document) {
-		
+	def dispatch void format(FrequencySampler frequencySampler, extension IFormattableDocument document) {
+		frequencySampler.regionFor.keyword("frequency").surround[oneSpace]
+		frequencySampler.regionFor.feature(Literals.FREQUENCY_SAMPLER__DELAY).prepend[oneSpace].append[newLine]
+	}
+	
+	def dispatch void format(SignalSampler signalSampler, extension IFormattableDocument document) {
+		signalSampler.regionFor.keyword("signal").prepend[oneSpace].append[newLine]
 	}
 	
 	def dispatch void format(Fog fog, extension IFormattableDocument document) {
-		
+		fog.regionFor.keyword("fog").prepend[noSpace].append[newLine]
+		fog.interior[indent]
+		fog.transformations.forEach[format]
 	}
 	
 	def dispatch void format(Cloud cloud, extension IFormattableDocument document) {
-		
+		cloud.regionFor.keyword("cloud").prepend[noSpace].append[newLine]
+		cloud.interior[indent]
+		cloud.transformations.forEach[format]
 	}
 	
 	def dispatch void format(Transformation transformation, extension IFormattableDocument document) {
+		transformation.regionFor.keyword("transformation").prepend[noSpace].append[oneSpace]
+		transformation.regionFor.feature(Literals.TRANSFORMATION__PROVIDER).surround[oneSpace]
+		transformation.regionFor.keyword("as").surround[oneSpace]
 		
+		transformation.variables.format
+		transformation.variables.append[newLine]
+		
+		transformation.interior[indent]
+		
+		transformation.datas.forEach[format]
 	}
 	
 	def dispatch void format(TransformationData transformationData, extension IFormattableDocument document) {
+		transformationData.regionFor.keyword("data").prepend[noSpace].append[oneSpace]
+		transformationData.regionFor.feature(Literals.DATA__NAME).prepend[oneSpace].append[newLine]
 		
+		transformationData.interior[indent]
+		
+		transformationData.outputs.forEach[format]
 	}
 	
 	def dispatch void format(TransformationOut transformationOut, extension IFormattableDocument document) {
+		transformationOut.regionFor.keyword("out").prepend[noSpace].append[oneSpace]
 		
+		transformationOut.pipeline.format
+		transformationOut.pipeline.append[setNewLines(2)]
 	}
 }

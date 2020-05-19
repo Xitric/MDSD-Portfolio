@@ -35,6 +35,7 @@ import org.iot.devicefactory.common.Tuple
 import org.iot.devicefactory.common.Unequal
 import org.iot.devicefactory.common.Variables
 import org.iot.devicefactory.common.Window
+import org.iot.devicefactory.common.Pipeline
 
 class CommonFormatter extends AbstractFormatter2 {
 
@@ -60,9 +61,10 @@ class CommonFormatter extends AbstractFormatter2 {
 		window.execute.surround[noSpace]
 	}
 	
-	private def formatPipelineParentheses(EObject obj, extension IFormattableDocument document) {
-		obj.regionFor.keyword("[").surround[noSpace]
-		obj.regionFor.keyword("]").surround[noSpace]
+	private def formatPipelineParentheses(Pipeline pipeline, extension IFormattableDocument document) {
+		pipeline.regionFor.keyword(".").surround[noSpace]
+		pipeline.regionFor.keyword("[").surround[noSpace]
+		pipeline.regionFor.keyword("]").surround[noSpace]
 	} 
 
 	def dispatch void format(Conditional conditional, extension IFormattableDocument document) {
