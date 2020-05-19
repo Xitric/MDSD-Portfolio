@@ -84,7 +84,9 @@ class DeviceLibraryFormatter extends CommonFormatter {
 		i2c.formatInput("i2c", document)
 		
 		val addressRegion = i2c.regionFor.feature(Literals.I2C__ADDRESS)
-		document.addReplacer(new AddressReplacer(addressRegion))
+		if (addressRegion !== null) {
+			document.addReplacer(new AddressReplacer(addressRegion))
+		}
 	}
 	
 	private def formatInput(SensorInput sensorInput, String keyword, extension IFormattableDocument document) {

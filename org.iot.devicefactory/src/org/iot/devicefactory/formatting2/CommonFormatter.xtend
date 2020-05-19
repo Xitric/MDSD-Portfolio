@@ -15,6 +15,7 @@ import org.iot.devicefactory.common.CommonPackage.Literals
 import org.iot.devicefactory.common.Conditional
 import org.iot.devicefactory.common.Div
 import org.iot.devicefactory.common.Equal
+import org.iot.devicefactory.common.ExecutePipeline
 import org.iot.devicefactory.common.Exponent
 import org.iot.devicefactory.common.Expression
 import org.iot.devicefactory.common.Filter
@@ -28,6 +29,7 @@ import org.iot.devicefactory.common.Negation
 import org.iot.devicefactory.common.Not
 import org.iot.devicefactory.common.NumberLiteral
 import org.iot.devicefactory.common.Or
+import org.iot.devicefactory.common.Pipeline
 import org.iot.devicefactory.common.Rem
 import org.iot.devicefactory.common.StringLiteral
 import org.iot.devicefactory.common.Sub
@@ -35,7 +37,6 @@ import org.iot.devicefactory.common.Tuple
 import org.iot.devicefactory.common.Unequal
 import org.iot.devicefactory.common.Variables
 import org.iot.devicefactory.common.Window
-import org.iot.devicefactory.common.Pipeline
 
 class CommonFormatter extends AbstractFormatter2 {
 
@@ -61,11 +62,19 @@ class CommonFormatter extends AbstractFormatter2 {
 		window.execute.surround[noSpace]
 	}
 	
-	private def formatPipelineParentheses(Pipeline pipeline, extension IFormattableDocument document) {
-		pipeline.regionFor.keyword(".").surround[noSpace]
+	private def void formatPipelineParentheses(Pipeline pipeline, extension IFormattableDocument document) {
+		val dotRegion = pipeline.regionFor.keyword(".")
+		if (dotRegion !== null && !(dotRegion.nextSemanticRegion.semanticElement instanceof ExecutePipeline)) {
+			val begin = dotRegion.previousHiddenRegion
+			val end = pipeline.regionFor.keyword("]").previousHiddenRegion
+			document.set(begin, [newLine])
+			document.set(begin, end, [indent])
+		}
+
+		dotRegion.surround[noSpace]
 		pipeline.regionFor.keyword("[").surround[noSpace]
 		pipeline.regionFor.keyword("]").surround[noSpace]
-	} 
+	}
 
 	def dispatch void format(Conditional conditional, extension IFormattableDocument document) {
 		conditional.formatParentheses(document)

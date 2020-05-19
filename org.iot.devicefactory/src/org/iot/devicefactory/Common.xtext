@@ -12,7 +12,11 @@ Pipeline:
 		{Map} 'map' '[' expression=Expression '=>' output=VariableDeclaration ']' |
 		{Window} 'window' '[' width=INT ']' '.' execute=ExecutePipeline
 	)
-	('.' next=Pipeline)?
+	(next=NextPipeline)?
+;
+
+NextPipeline returns Pipeline:
+	BEGIN '.' Pipeline END | '.' Pipeline
 ;
 
 // This is how I would have liked to represent it
@@ -29,7 +33,6 @@ Pipeline:
 //;
 //
 //Window:
-//	
 //	'window' '[' width=INT ']' '.' execute=ExecutePipeline
 //;
 
