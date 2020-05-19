@@ -24,6 +24,7 @@ import org.iot.devicefactory.common.Mul
 import org.iot.devicefactory.common.Negation
 import org.iot.devicefactory.common.Not
 import org.iot.devicefactory.common.Or
+import org.iot.devicefactory.common.Rem
 import org.iot.devicefactory.common.Sub
 import org.iot.devicefactory.common.Tuple
 import org.iot.devicefactory.common.Unequal
@@ -161,6 +162,12 @@ class CommonValidator extends AbstractCommonValidator {
 	def validateExpression(Div exp) {
 		exp.left.validateNumber(Literals.DIV__LEFT)
 		exp.right.validateNumber(Literals.DIV__RIGHT)
+	}
+	
+	@Check
+	def validateExpression(Rem exp) {
+		exp.left.validateNumber(Literals.REM__LEFT)
+		exp.right.validateNumber(Literals.REM__RIGHT)
 	}
 
 	@Check

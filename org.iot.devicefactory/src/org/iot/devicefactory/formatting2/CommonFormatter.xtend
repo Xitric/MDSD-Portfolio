@@ -11,6 +11,7 @@ import org.eclipse.xtext.formatting2.ITextReplacerContext
 import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
 import org.iot.devicefactory.common.Add
 import org.iot.devicefactory.common.And
+import org.iot.devicefactory.common.CommonPackage.Literals
 import org.iot.devicefactory.common.Conditional
 import org.iot.devicefactory.common.Div
 import org.iot.devicefactory.common.Equal
@@ -27,13 +28,13 @@ import org.iot.devicefactory.common.Negation
 import org.iot.devicefactory.common.Not
 import org.iot.devicefactory.common.NumberLiteral
 import org.iot.devicefactory.common.Or
+import org.iot.devicefactory.common.Rem
 import org.iot.devicefactory.common.StringLiteral
 import org.iot.devicefactory.common.Sub
 import org.iot.devicefactory.common.Tuple
 import org.iot.devicefactory.common.Unequal
 import org.iot.devicefactory.common.Variables
 import org.iot.devicefactory.common.Window
-import org.iot.devicefactory.common.CommonPackage.Literals
 
 class CommonFormatter extends AbstractFormatter2 {
 
@@ -156,6 +157,13 @@ class CommonFormatter extends AbstractFormatter2 {
 		div.regionFor.keyword("/").surround[oneSpace]
 		div.left.format
 		div.right.format
+	}
+	
+	def dispatch void format(Rem rem, extension IFormattableDocument document) {
+		rem.formatParentheses(document)
+		rem.regionFor.keyword("%").surround[oneSpace]
+		rem.left.format
+		rem.right.format
 	}
 
 	def dispatch void format(Negation negation, extension IFormattableDocument document) {

@@ -73,7 +73,7 @@ SubAdd returns Expression:
 ;
 
 MulDiv returns Expression:
-	Negation ({Mul.left=current} '*' right=Negation | {Div.left=current} '/' right=Negation)*
+	Negation ({Mul.left=current} '*' right=Negation | {Div.left=current} '/' right=Negation | {Rem.left=current} '%' right=Negation)*
 ;
 
 Negation returns Expression:

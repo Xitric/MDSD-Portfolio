@@ -19,6 +19,7 @@ import org.iot.devicefactory.common.Tuple
 import org.iot.devicefactory.common.Window
 
 import static org.iot.devicefactory.typing.ExpressionType.*
+import org.iot.devicefactory.common.Rem
 
 class ExpressionTypeChecker {
 
@@ -128,6 +129,10 @@ class ExpressionTypeChecker {
 	}
 
 	def dispatch ExpressionType typeOf(Div exp) {
+		evaluateNumeralTypes(exp.left.typeOf, exp.right.typeOf)
+	}
+	
+	def dispatch ExpressionType typeOf(Rem exp) {
 		evaluateNumeralTypes(exp.left.typeOf, exp.right.typeOf)
 	}
 
