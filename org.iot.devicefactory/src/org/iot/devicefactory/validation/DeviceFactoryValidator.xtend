@@ -19,6 +19,7 @@ import org.iot.devicefactory.deviceFactory.Library
 import org.iot.devicefactory.deviceFactory.Out
 import org.iot.devicefactory.deviceFactory.OverrideSensor
 import org.iot.devicefactory.deviceFactory.Sensor
+import org.iot.devicefactory.deviceFactory.Transformation
 import org.iot.devicefactory.generator.DeviceFactoryGenerator
 import org.iot.devicefactory.typing.DeviceFactoryTypeChecker
 import org.iot.devicefactory.typing.ExpressionTypeChecker
@@ -27,6 +28,7 @@ import org.iot.devicefactory.util.IndexUtils
 import static org.iot.devicefactory.validation.DeviceFactoryIssueCodes.*
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension org.iot.devicefactory.util.CommonUtils.*
 import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
 import static extension org.iot.devicefactory.util.QualifiedNameUtils.*
 
@@ -38,7 +40,7 @@ import static extension org.iot.devicefactory.util.QualifiedNameUtils.*
 class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	
 	@Inject DeviceFactoryGenerator factoryGenerator
-	@Inject ExpressionTypeChecker typeChecker
+	@Inject extension ExpressionTypeChecker typeChecker
 	@Inject extension IndexUtils
 	@Inject extension IQualifiedNameConverter
 	@Inject extension DeviceFactoryTypeChecker
@@ -156,6 +158,22 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 		val sensor = data.getContainerOfType(Sensor)
 		if (sensor.datas.takeWhile[it !== data].exists[name == data.name]) {
 			error('''Duplicate data «data.name» in same sensor''', Literals.DATA__NAME, DUPLICATE_DATA)
+		}
+	}
+	
+	@Check
+	def validateTransformationVariables(Transformation transformation) {
+		if (transformation.provider !== null) {
+			val expectedCount = transformation.provider.typeOf(typeChecker).valueCount
+			val actualCount = transformation.variables.variableCount
+			
+			if (expectedCount !== actualCount) {
+				error(
+					'''Expected variable declaration to contain «expectedCount» variable«IF expectedCount > 1»s«ENDIF», got «actualCount»''',
+					Literals.TRANSFORMATION__VARIABLES,
+					INCORRECT_VARIABLE_DECLARATION
+				)
+			}
 		}
 	}
 }

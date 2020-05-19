@@ -28,7 +28,6 @@ import org.iot.devicefactory.common.Sub
 import org.iot.devicefactory.common.Tuple
 import org.iot.devicefactory.common.Unequal
 import org.iot.devicefactory.common.Variable
-import org.iot.devicefactory.common.VariableDeclaration
 import org.iot.devicefactory.common.Variables
 import org.iot.devicefactory.common.Window
 import org.iot.devicefactory.typing.ExpressionType
@@ -38,6 +37,7 @@ import org.iot.devicefactory.typing.TupleExpressionType
 import static org.iot.devicefactory.validation.CommonIssueCodes.*
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension org.iot.devicefactory.util.CommonUtils.*
 
 /**
  * This class contains custom validation rules. 
@@ -230,18 +230,8 @@ class CommonValidator extends AbstractCommonValidator {
 	
 	@Check
 	def validateMapVariableDeclaration(Map map) {
-		val outputType = map.expression.typeOf
-		val expectedCount = switch outputType {
-			TupleExpressionType: outputType.elements.size
-			default: 1
-		}
-		
-		val variableDeclaration = map.output
-		val actualCount = switch variableDeclaration {
-			Variables: variableDeclaration.vars.size
-			Variable: 1
-			default: 0
-		}
+		val expectedCount = map.expression.typeOf.valueCount
+		val actualCount = map.output.variableCount
 		
 		if (expectedCount !== actualCount) {
 			error(

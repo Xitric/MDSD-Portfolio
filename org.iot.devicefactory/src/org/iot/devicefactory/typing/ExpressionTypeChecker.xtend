@@ -157,6 +157,13 @@ class ExpressionTypeChecker {
 		VOID
 	}
 	
+	def getValueCount(ExpressionType expressionType) {
+		switch expressionType {
+			TupleExpressionType: expressionType.elements.size
+			default: 1
+		}
+	}
+	
 	// Gets the input of a single pipeline operation
 	def inputTypeOfPipeline(Pipeline pipeline) {
 		val precedingPipeline = pipeline.eContainer

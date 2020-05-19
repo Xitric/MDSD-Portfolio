@@ -27,4 +27,8 @@ class CommonUtils {
 	static def Iterable<Variable> getVariables(EObject context) {
 		context.getContainerOfType(Pipeline)?.eContainer()?.getContainerOfType(Map)?.output?.variables ?: emptyList
 	}
+	
+	static def getVariableCount(VariableDeclaration variableDeclaration) {
+		variableDeclaration.variables.size
+	}
 }
