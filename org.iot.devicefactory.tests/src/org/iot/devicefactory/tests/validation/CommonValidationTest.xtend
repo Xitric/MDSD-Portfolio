@@ -221,11 +221,11 @@ class CommonValidationTest {
 	
 	@Test def void testTuple() {
 		'''
-		map[(5, "", false) => a]
+		map[(5, "", false) => (a, b, c)]
 		'''.parse.assertNoErrors
 		
 		'''
-		map[(5, (0x3, ""), false) => a]
+		map[(5, (0x3, ""), false) => (a, b, c)]
 		'''.parse.assertError(
 			Literals.TUPLE,
 			null,
@@ -244,6 +244,32 @@ class CommonValidationTest {
 			Literals.FILTER,
 			null,
 			"Expected boolean, got integer"
+		)
+	}
+	
+	@Test def void testMap() {
+		'''
+		map[5 => a]
+		'''.parse.assertNoErrors
+		
+		'''
+		map[5 => (a, b)]
+		'''.parse.assertError(
+			Literals.MAP,
+			null,
+			"Expected output variable declaration to contain 1 variable, got 2"
+		)
+		
+		'''
+		map[(5, 2) => (a, b)]
+		'''.parse.assertNoErrors
+		
+		'''
+		map[(5, 2) => a]
+		'''.parse.assertError(
+			Literals.MAP,
+			null,
+			"Expected output variable declaration to contain 2 variables, got 1"
 		)
 	}
 	

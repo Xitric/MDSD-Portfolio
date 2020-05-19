@@ -19,6 +19,7 @@ import org.iot.devicefactory.common.GreaterThan
 import org.iot.devicefactory.common.GreaterThanEqual
 import org.iot.devicefactory.common.LessThan
 import org.iot.devicefactory.common.LessThanEqual
+import org.iot.devicefactory.common.Map
 import org.iot.devicefactory.common.Mul
 import org.iot.devicefactory.common.Negation
 import org.iot.devicefactory.common.Not
@@ -27,6 +28,7 @@ import org.iot.devicefactory.common.Sub
 import org.iot.devicefactory.common.Tuple
 import org.iot.devicefactory.common.Unequal
 import org.iot.devicefactory.common.Variable
+import org.iot.devicefactory.common.VariableDeclaration
 import org.iot.devicefactory.common.Variables
 import org.iot.devicefactory.common.Window
 import org.iot.devicefactory.typing.ExpressionType
@@ -223,6 +225,29 @@ class CommonValidator extends AbstractCommonValidator {
 					Literals.VARIABLE__NAME
 				)
 			}
+		}
+	}
+	
+	@Check
+	def validateMapVariableDeclaration(Map map) {
+		val outputType = map.expression.typeOf
+		val expectedCount = switch outputType {
+			TupleExpressionType: outputType.elements.size
+			default: 1
+		}
+		
+		val variableDeclaration = map.output
+		val actualCount = switch variableDeclaration {
+			Variables: variableDeclaration.vars.size
+			Variable: 1
+			default: 0
+		}
+		
+		if (expectedCount !== actualCount) {
+			error(
+				'''Expected output variable declaration to contain «expectedCount» variable«IF expectedCount > 1»s«ENDIF», got «actualCount»''',
+				Literals.MAP__OUTPUT
+			)
 		}
 	}
 }
