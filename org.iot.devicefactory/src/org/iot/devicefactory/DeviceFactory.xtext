@@ -29,34 +29,46 @@ Channel:
 	'channel' name=ID
 ;
 
+// Inlined rules due to Xtext bug:
+// https://bugs.eclipse.org/bugs/show_bug.cgi?id=485118
 Device:
-	(BaseDevice | ChildDevice) BEGIN
+	(
+		{BaseDevice} 'device' name=ID 'board' board=[Library::Board|QualifiedName] |
+		{ChildDevice} 'device' name=ID 'includes' parent=[Device]
+	) BEGIN
 		('in' input=[Channel])?
 		sensors+=Sensor+
 	END
 ;
 
-BaseDevice:
-	'device' name=ID 'board' board=[Library::Board|QualifiedName]
-;
+// This is how I would have liked to represent it
+//BaseDevice:
+//	'device' name=ID 'board' board=[Library::Board|QualifiedName]
+//;
+//
+//ChildDevice:
+//	'device' name=ID 'includes' parent=[Device]
+//;
 
-ChildDevice:
-	'device' name=ID 'includes' parent=[Device]
-;
-
+// Inlined rules due to Xtext bug:
+// https://bugs.eclipse.org/bugs/show_bug.cgi?id=485118
 Sensor:
-	(BaseSensor | OverrideSensor) BEGIN
+	(
+		{BaseSensor} 'sensor' definition=[Library::Sensor] sampler=Sampler |
+		{OverrideSensor} 'override' 'sensor' parent=[Sensor] (sampler=Sampler)?
+	) BEGIN
 		datas+=SensorData+
 	END
 ;
 
-BaseSensor:
-	'sensor' definition=[Library::Sensor] sampler=Sampler
-;
-
-OverrideSensor:
-	'override' 'sensor' parent=[Sensor] (sampler=Sampler)?
-;
+// This is how I would have liked to represent it
+//BaseSensor:
+//	'sensor' definition=[Library::Sensor] sampler=Sampler
+//;
+//
+//OverrideSensor:
+//	'override' 'sensor' parent=[Sensor] (sampler=Sampler)?
+//;
 
 SensorData:
 	'data' name=ID BEGIN
