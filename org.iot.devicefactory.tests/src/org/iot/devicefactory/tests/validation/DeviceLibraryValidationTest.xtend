@@ -230,11 +230,7 @@ class DeviceLibraryValidationTest {
 		'''
 		define board BoardA
 			sensor a i2c(0x5f) as (a, b)
-		'''.parse.assertError(
-			Literals.BASE_SENSOR,
-			DeviceLibraryIssueCodes.INCORRECT_VARIABLE_DECLARATION,
-			"Expected variable declaration to contain 1 variable, got 2"
-		)
+		'''.parse.assertNoError(DeviceLibraryIssueCodes.INCORRECT_VARIABLE_DECLARATION)
 	}
 	
 	@Test def void testWindowPipelineRoot() {

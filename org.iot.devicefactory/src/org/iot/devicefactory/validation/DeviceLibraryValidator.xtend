@@ -78,12 +78,15 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 	@Check
 	def validateSensorVariableDeclaration(BaseSensor sensor) {
 		val input = sensor.input
-		val expectedCount = switch input {
-			Pin: input.pins.size
-			I2C: 1
+		if (input instanceof I2C) {
+			return
 		}
 		
 		val actualCount = sensor.input.variables.variableCount
+		val expectedCount = switch input {
+			Pin: input.pins.size
+			default: 1
+		}
 		
 		if (expectedCount !== actualCount) {
 			error(
