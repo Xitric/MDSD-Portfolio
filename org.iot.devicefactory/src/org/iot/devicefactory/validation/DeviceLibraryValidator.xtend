@@ -7,13 +7,16 @@ import org.eclipse.xtext.validation.Check
 import org.iot.devicefactory.deviceLibrary.BaseSensor
 import org.iot.devicefactory.deviceLibrary.Board
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
+import org.iot.devicefactory.deviceLibrary.I2C
 import org.iot.devicefactory.deviceLibrary.Library
 import org.iot.devicefactory.deviceLibrary.OverrideSensor
+import org.iot.devicefactory.deviceLibrary.Pin
 import org.iot.devicefactory.deviceLibrary.Sensor
 
 import static org.iot.devicefactory.validation.DeviceLibraryIssueCodes.*
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension org.iot.devicefactory.util.CommonUtils.*
 import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
 
 /**
@@ -68,6 +71,25 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 		if (board.parent.boardHierarchy.exists[sensors.exists[name == sensor.name]]) {
 			error('''Redeclared sensor «sensor.name» must override inherited definition from parent''',
 				Literals.BASE_SENSOR__NAME, NON_OVERRIDING_SENSOR
+			)
+		}
+	}
+	
+	@Check
+	def validateSensorVariableDeclaration(BaseSensor sensor) {
+		val input = sensor.input
+		val expectedCount = switch input {
+			Pin: input.pins.size
+			I2C: 1
+		}
+		
+		val actualCount = sensor.input.variables.variableCount
+		
+		if (expectedCount !== actualCount) {
+			error(
+				'''Expected variable declaration to contain «expectedCount» variable«IF expectedCount > 1»s«ENDIF», got «actualCount»''',
+				Literals.BASE_SENSOR__INPUT,
+				INCORRECT_VARIABLE_DECLARATION
 			)
 		}
 	}

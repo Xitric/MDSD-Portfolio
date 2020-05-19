@@ -191,6 +191,52 @@ class DeviceLibraryValidationTest {
 		)
 	}
 	
+	@Test def void testPinVariables() {
+		'''
+		define board BoardA
+			sensor a pin(12) as a
+		'''.parse.assertNoError(DeviceLibraryIssueCodes.INCORRECT_VARIABLE_DECLARATION)
+		
+		'''
+		define board BoardA
+			sensor a pin(12) as (a, b)
+		'''.parse.assertError(
+			Literals.BASE_SENSOR,
+			DeviceLibraryIssueCodes.INCORRECT_VARIABLE_DECLARATION,
+			"Expected variable declaration to contain 1 variable, got 2"
+		)
+		
+		'''
+		define board BoardA
+			sensor a pin(12, 13) as a
+		'''.parse.assertError(
+			Literals.BASE_SENSOR,
+			DeviceLibraryIssueCodes.INCORRECT_VARIABLE_DECLARATION,
+			"Expected variable declaration to contain 2 variables, got 1"
+		)
+		
+		'''
+		define board BoardA
+			sensor a pin(12, 13) as (a, b)
+		'''.parse.assertNoError(DeviceLibraryIssueCodes.INCORRECT_VARIABLE_DECLARATION)
+	}
+	
+	@Test def void testI2cVariables() {
+		'''
+		define board BoardA
+			sensor a i2c(0x5f) as a
+		'''.parse.assertNoError(DeviceLibraryIssueCodes.INCORRECT_VARIABLE_DECLARATION)
+		
+		'''
+		define board BoardA
+			sensor a i2c(0x5f) as (a, b)
+		'''.parse.assertError(
+			Literals.BASE_SENSOR,
+			DeviceLibraryIssueCodes.INCORRECT_VARIABLE_DECLARATION,
+			"Expected variable declaration to contain 1 variable, got 2"
+		)
+	}
+	
 	@Test def void testWindowPipelineRoot() {
 		'''
 		define board BoardA
