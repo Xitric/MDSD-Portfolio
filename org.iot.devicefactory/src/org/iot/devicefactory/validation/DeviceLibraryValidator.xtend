@@ -4,14 +4,14 @@
 package org.iot.devicefactory.validation
 
 import org.eclipse.xtext.validation.Check
-import org.iot.devicefactory.deviceLibrary.BaseSensor
+import org.iot.devicefactory.deviceLibrary.BaseSensorDefinition
 import org.iot.devicefactory.deviceLibrary.Board
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
 import org.iot.devicefactory.deviceLibrary.I2C
 import org.iot.devicefactory.deviceLibrary.Library
-import org.iot.devicefactory.deviceLibrary.OverrideSensor
+import org.iot.devicefactory.deviceLibrary.OverrideSensorDefinition
 import org.iot.devicefactory.deviceLibrary.Pin
-import org.iot.devicefactory.deviceLibrary.Sensor
+import org.iot.devicefactory.deviceLibrary.SensorDefinition
 
 import static org.iot.devicefactory.validation.DeviceLibraryIssueCodes.*
 
@@ -53,12 +53,12 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 	}
 	
 	@Check
-	def validateNoDuplicateSensors(Sensor sensor) {
+	def validateNoDuplicateSensors(SensorDefinition sensor) {
 		val board = sensor.getContainerOfType(Board)
 		if (board.sensors.takeWhile[it !== sensor].exists[it.name == sensor.name]) {
 			val feature = switch sensor {
-				BaseSensor: Literals.BASE_SENSOR__NAME
-				OverrideSensor: Literals.OVERRIDE_SENSOR__PARENT
+				BaseSensorDefinition: Literals.BASE_SENSOR_DEFINITION__NAME
+				OverrideSensorDefinition: Literals.OVERRIDE_SENSOR_DEFINITION__PARENT
 			}
 			
 			error('''Duplicate sensor definition «sensor.name» in same board''', feature, DUPLICATE_SENSOR)
@@ -66,17 +66,17 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 	}
 	
 	@Check
-	def validateChildSensorsOverride(BaseSensor sensor) {
+	def validateChildSensorsOverride(BaseSensorDefinition sensor) {
 		val board = sensor.getContainerOfType(Board)
 		if (board.parent.boardHierarchy.exists[sensors.exists[name == sensor.name]]) {
 			error('''Redeclared sensor «sensor.name» must override inherited definition from parent''',
-				Literals.BASE_SENSOR__NAME, NON_OVERRIDING_SENSOR
+				Literals.BASE_SENSOR_DEFINITION__NAME, NON_OVERRIDING_SENSOR
 			)
 		}
 	}
 	
 	@Check
-	def validateSensorVariableDeclaration(BaseSensor sensor) {
+	def validateSensorVariableDeclaration(BaseSensorDefinition sensor) {
 		val input = sensor.input
 		if (input instanceof I2C) {
 			return
@@ -91,7 +91,7 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 		if (expectedCount !== actualCount) {
 			error(
 				'''Expected variable declaration to contain «expectedCount» variable«IF expectedCount > 1»s«ENDIF», got «actualCount»''',
-				Literals.BASE_SENSOR__INPUT,
+				Literals.BASE_SENSOR_DEFINITION__INPUT,
 				INCORRECT_VARIABLE_DECLARATION
 			)
 		}

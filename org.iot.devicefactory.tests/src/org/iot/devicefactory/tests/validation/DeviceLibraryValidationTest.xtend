@@ -135,7 +135,7 @@ class DeviceLibraryValidationTest {
 	
 	private def assertDuplicateSensors(Library library, String sensorName) {
 		library.assertError(
-			Literals.SENSOR,
+			Literals.SENSOR_DEFINITION,
 			DeviceLibraryIssueCodes.DUPLICATE_SENSOR,
 			'''Duplicate sensor definition «sensorName» in same board'''
 		)
@@ -149,7 +149,7 @@ class DeviceLibraryValidationTest {
 		define board BoardB includes BoardA
 			sensor a pin(12) as p
 		'''.parse.assertError(
-			Literals.SENSOR,
+			Literals.SENSOR_DEFINITION,
 			DeviceLibraryIssueCodes.NON_OVERRIDING_SENSOR,
 			"Redeclared sensor a must override inherited definition from parent"
 		)
@@ -160,9 +160,9 @@ class DeviceLibraryValidationTest {
 		define board BoardA
 			override sensor a
 		'''.parse.assertError(
-			Literals.SENSOR,
+			Literals.SENSOR_DEFINITION,
 			Diagnostic.LINKING_DIAGNOSTIC,
-			"Couldn't resolve reference to Sensor 'a'"
+			"Couldn't resolve reference to SensorDefinition 'a'"
 		)
 	}
 	
@@ -174,9 +174,9 @@ class DeviceLibraryValidationTest {
 		define board BoardB includes BoardA
 			override sensor b
 		'''.parse.assertError(
-			Literals.SENSOR,
+			Literals.SENSOR_DEFINITION,
 			Diagnostic.LINKING_DIAGNOSTIC,
-			"Couldn't resolve reference to Sensor 'b'."
+			"Couldn't resolve reference to SensorDefinition 'b'."
 		)
 	}
 	
@@ -201,7 +201,7 @@ class DeviceLibraryValidationTest {
 		define board BoardA
 			sensor a pin(12) as (a, b)
 		'''.parse.assertError(
-			Literals.BASE_SENSOR,
+			Literals.BASE_SENSOR_DEFINITION,
 			DeviceLibraryIssueCodes.INCORRECT_VARIABLE_DECLARATION,
 			"Expected variable declaration to contain 1 variable, got 2"
 		)
@@ -210,7 +210,7 @@ class DeviceLibraryValidationTest {
 		define board BoardA
 			sensor a pin(12, 13) as a
 		'''.parse.assertError(
-			Literals.BASE_SENSOR,
+			Literals.BASE_SENSOR_DEFINITION,
 			DeviceLibraryIssueCodes.INCORRECT_VARIABLE_DECLARATION,
 			"Expected variable declaration to contain 2 variables, got 1"
 		)

@@ -7,7 +7,7 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import org.iot.devicefactory.common.CommonPackage
 import org.iot.devicefactory.common.Map
 import org.iot.devicefactory.common.Reference
-import org.iot.devicefactory.deviceLibrary.BaseSensor
+import org.iot.devicefactory.deviceLibrary.BaseSensorDefinition
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
 import org.iot.devicefactory.deviceLibrary.Library
 import org.iot.devicefactory.tests.DeviceLibraryInjectorProvider
@@ -183,7 +183,7 @@ class DeviceLibraryScopingTest {
 				preprocess map[p => p]
 		'''.parse.boards => [
 			((get(0).sensors.get(0).preprocess.pipeline as Map).expression as Reference).variable.assertSame(
-				(get(0).sensors.get(0) as BaseSensor).input.variables
+				(get(0).sensors.get(0) as BaseSensorDefinition).input.variables
 			)
 			((get(1).sensors.get(0).preprocess.pipeline as Map).expression as Reference).variable.assertSame(
 				(get(0).sensors.get(0).preprocess.pipeline as Map).output

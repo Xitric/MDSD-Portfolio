@@ -54,7 +54,7 @@ Device:
 // https://bugs.eclipse.org/bugs/show_bug.cgi?id=485118
 Sensor:
 	(
-		{BaseSensor} 'sensor' definition=[Library::Sensor] sampler=Sampler |
+		{BaseSensor} 'sensor' definition=[Library::SensorDefinition] sampler=Sampler |
 		{OverrideSensor} 'override' 'sensor' parent=[Sensor] (sampler=Sampler)?
 	) BEGIN
 		datas+=SensorData+

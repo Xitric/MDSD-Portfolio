@@ -6,7 +6,7 @@ import org.iot.devicefactory.common.Reference
 import org.iot.devicefactory.common.Variable
 import org.iot.devicefactory.common.Variables
 import org.iot.devicefactory.deviceFactory.Transformation
-import org.iot.devicefactory.deviceLibrary.BaseSensor
+import org.iot.devicefactory.deviceLibrary.BaseSensorDefinition
 
 import static org.iot.devicefactory.typing.ExpressionType.*
 
@@ -24,7 +24,7 @@ class ReferenceTypeProvider {
 			return variable.getMapType(map, typeChecker)
 		}
 
-		val baseSensor = variable.getContainerOfType(BaseSensor)
+		val baseSensor = variable.getContainerOfType(BaseSensorDefinition)
 		if (baseSensor !== null) {
 			return getBaseSensorType()
 		}

@@ -5,7 +5,7 @@ import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.util.ParseHelper
 import org.iot.devicefactory.deviceLibrary.Library
-import org.iot.devicefactory.deviceLibrary.OverrideSensor
+import org.iot.devicefactory.deviceLibrary.OverrideSensorDefinition
 import org.iot.devicefactory.tests.DeviceLibraryInjectorProvider
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
@@ -31,10 +31,10 @@ class DeviceLibraryUtilsTest {
 			override sensor a
 				preprocess filter[true]
 		'''.parse.boards => [
-			(get(1).sensors.get(0) as OverrideSensor).parent.assertSame(
+			(get(1).sensors.get(0) as OverrideSensorDefinition).parent.assertSame(
 				get(0).sensors.get(0)
 			)
-			(get(2).sensors.get(0) as OverrideSensor).parent.assertSame(
+			(get(2).sensors.get(0) as OverrideSensorDefinition).parent.assertSame(
 				get(1).sensors.get(0)
 			)
 		]

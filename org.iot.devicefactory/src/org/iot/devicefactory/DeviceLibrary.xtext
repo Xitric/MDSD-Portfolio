@@ -9,22 +9,22 @@ Library:
 
 Board:
 	'define' 'board' name=ID ('includes' parent=[Board|QualifiedName])? BEGIN
-		sensors += Sensor+
+		sensors += SensorDefinition+
 	END
 ;
 
-Sensor:
-	BaseSensor | OverrideSensor
+SensorDefinition:
+	BaseSensorDefinition | OverrideSensorDefinition
 ;
 
-BaseSensor:
+BaseSensorDefinition:
 	'sensor' name=ID input=SensorInput (BEGIN
 		preprocess = Preprocess
 	END)?
 ;
 
-OverrideSensor:
-	'override' 'sensor' parent=[Sensor] BEGIN
+OverrideSensorDefinition:
+	'override' 'sensor' parent=[SensorDefinition] BEGIN
 		preprocess = Preprocess
 	END
 ;

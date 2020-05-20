@@ -7,16 +7,16 @@ import org.eclipse.xtext.formatting2.IFormattableDocument
 import org.eclipse.xtext.formatting2.ITextReplacer
 import org.eclipse.xtext.formatting2.ITextReplacerContext
 import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
-import org.iot.devicefactory.deviceLibrary.BaseSensor
+import org.iot.devicefactory.deviceLibrary.BaseSensorDefinition
 import org.iot.devicefactory.deviceLibrary.Board
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
 import org.iot.devicefactory.deviceLibrary.I2C
 import org.iot.devicefactory.deviceLibrary.Library
-import org.iot.devicefactory.deviceLibrary.OverrideSensor
+import org.iot.devicefactory.deviceLibrary.OverrideSensorDefinition
 import org.iot.devicefactory.deviceLibrary.Pin
 import org.iot.devicefactory.deviceLibrary.Preprocess
 import org.iot.devicefactory.deviceLibrary.SensorInput
-import org.iot.devicefactory.deviceLibrary.Sensor
+import org.iot.devicefactory.deviceLibrary.SensorDefinition
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 
@@ -42,7 +42,7 @@ class DeviceLibraryFormatter extends CommonFormatter {
 		board.sensors.forEach[format]
 	}
 	
-	def dispatch void format(BaseSensor baseSensor, extension IFormattableDocument document) {
+	def dispatch void format(BaseSensorDefinition baseSensor, extension IFormattableDocument document) {
 		baseSensor.formatSensor(document)
 		baseSensor.input.format
 		
@@ -51,16 +51,16 @@ class DeviceLibraryFormatter extends CommonFormatter {
 		}
 	}
 	
-	def dispatch void format(OverrideSensor overrideSensor, extension IFormattableDocument document) {
+	def dispatch void format(OverrideSensorDefinition overrideSensor, extension IFormattableDocument document) {
 		overrideSensor.formatSensor(document)
 		overrideSensor.regionFor.keyword("override").append[oneSpace]
 		
 		if (overrideSensor.preprocess !== null) {
-			overrideSensor.regionFor.feature(Literals.OVERRIDE_SENSOR__PARENT).append[newLine]
+			overrideSensor.regionFor.feature(Literals.OVERRIDE_SENSOR_DEFINITION__PARENT).append[newLine]
 		}
 	}
 	
-	private def formatSensor(Sensor sensor, extension IFormattableDocument document) {
+	private def formatSensor(SensorDefinition sensor, extension IFormattableDocument document) {
 		sensor.regionFor.keyword("sensor").append[oneSpace]
 		
 		if (sensor.preprocess !== null) {

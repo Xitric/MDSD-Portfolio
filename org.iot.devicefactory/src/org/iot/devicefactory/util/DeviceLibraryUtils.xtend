@@ -2,10 +2,10 @@ package org.iot.devicefactory.util
 
 import java.util.ArrayList
 import org.iot.devicefactory.common.Variable
-import org.iot.devicefactory.deviceLibrary.BaseSensor
+import org.iot.devicefactory.deviceLibrary.BaseSensorDefinition
 import org.iot.devicefactory.deviceLibrary.Board
-import org.iot.devicefactory.deviceLibrary.OverrideSensor
-import org.iot.devicefactory.deviceLibrary.Sensor
+import org.iot.devicefactory.deviceLibrary.OverrideSensorDefinition
+import org.iot.devicefactory.deviceLibrary.SensorDefinition
 
 import static extension org.iot.devicefactory.util.CommonUtils.*
 
@@ -21,23 +21,23 @@ class DeviceLibraryUtils {
 		return hierarchy
 	}
 
-	static def String getName(Sensor sensor) {
+	static def String getName(SensorDefinition sensor) {
 		switch sensor {
-			BaseSensor: sensor.name
-			OverrideSensor: sensor.parent.name
+			BaseSensorDefinition: sensor.name
+			OverrideSensorDefinition: sensor.parent.name
 		}
 	}
 	
-	static def Iterable<Variable> getInternalVariables(Sensor sensor) {
+	static def Iterable<Variable> getInternalVariables(SensorDefinition sensor) {
 		switch sensor {
-			BaseSensor:
+			BaseSensorDefinition:
 				sensor.input?.variables?.variables ?: emptyList
-			OverrideSensor:
+			OverrideSensorDefinition:
 				sensor.parent?.variables ?: emptyList
 		}
 	}
 	
-	static def Iterable<Variable> getVariables(Sensor sensor) {
+	static def Iterable<Variable> getVariables(SensorDefinition sensor) {
 		val pipelineVars = sensor.preprocess?.pipeline?.variables
 		if (pipelineVars.nullOrEmpty) {
 			sensor.internalVariables

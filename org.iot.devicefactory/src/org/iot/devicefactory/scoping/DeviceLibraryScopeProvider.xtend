@@ -12,7 +12,7 @@ import org.iot.devicefactory.common.CommonPackage
 import org.iot.devicefactory.deviceLibrary.Board
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
 import org.iot.devicefactory.deviceLibrary.Library
-import org.iot.devicefactory.deviceLibrary.Sensor
+import org.iot.devicefactory.deviceLibrary.SensorDefinition
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.CommonUtils.*
@@ -30,7 +30,7 @@ class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
 		switch reference {
 			case Literals.BOARD__PARENT:
 				context.boardParentScope
-			case Literals.OVERRIDE_SENSOR__PARENT:
+			case Literals.OVERRIDE_SENSOR_DEFINITION__PARENT:
 				context.sensorScope
 			case CommonPackage.Literals.REFERENCE__VARIABLE:
 				context.referenceVariableScope
@@ -59,7 +59,7 @@ class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
 	private def IScope getReferenceVariableScope(EObject context) {
 		val expressionScope = context.variables
 		if (expressionScope.empty) {
-			val sensor = context.getContainerOfType(Sensor)
+			val sensor = context.getContainerOfType(SensorDefinition)
 			Scopes.scopeFor(sensor.internalVariables)
 		} else {
 			Scopes.scopeFor(expressionScope)

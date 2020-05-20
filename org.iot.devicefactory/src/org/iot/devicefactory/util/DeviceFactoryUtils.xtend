@@ -13,6 +13,7 @@ import org.iot.devicefactory.deviceFactory.Device
 import org.iot.devicefactory.deviceFactory.Fog
 import org.iot.devicefactory.deviceFactory.OverrideSensor
 import org.iot.devicefactory.deviceFactory.Sensor
+import org.iot.devicefactory.deviceLibrary.SensorDefinition
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
@@ -49,7 +50,7 @@ class DeviceFactoryUtils {
 		device.deviceHierarchy.map[input].findFirst[it !== null]
 	}
 	
-	static def org.iot.devicefactory.deviceLibrary.Sensor getDefinition(Sensor sensor) {
+	static def SensorDefinition getDefinition(Sensor sensor) {
 		switch sensor {
 			BaseSensor: sensor.definition
 			OverrideSensor: sensor.parent.definition
