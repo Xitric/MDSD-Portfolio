@@ -19,6 +19,7 @@ import org.iot.devicefactory.deviceFactory.Library
 import org.iot.devicefactory.deviceFactory.Out
 import org.iot.devicefactory.deviceFactory.OverrideSensor
 import org.iot.devicefactory.deviceFactory.Sensor
+import org.iot.devicefactory.deviceFactory.SignalSampler
 import org.iot.devicefactory.deviceFactory.Transformation
 import org.iot.devicefactory.generator.DeviceFactoryGenerator
 import org.iot.devicefactory.typing.DeviceFactoryTypeChecker
@@ -47,20 +48,8 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 	
 	@Check(CheckType.NORMAL)
 	def validateDeployment(Deployment deployment) {
-		if (deployment.channels.empty) {
-			error("There must be at least one channel", Literals.DEPLOYMENT__CHANNELS, MISSING_CHANNEL)
-		}
-		
-		if (deployment.devices.empty) {
-			error("There must be at least one device", Literals.DEPLOYMENT__DEVICES, MISSING_DEVICE)
-		}
-		
 		if (deployment.fogs.size > 1) {
 			error("There can be at most one fog", Literals.DEPLOYMENT__FOGS, AMBIGUOUS_FOG)
-		}
-		
-		if (deployment.clouds.size == 0) {
-			error("There must be a cloud", Literals.DEPLOYMENT__FOGS, MISSING_CLOUD)
 		}
 		
 		if (deployment.clouds.size > 1) {
@@ -118,8 +107,22 @@ class DeviceFactoryValidator extends AbstractDeviceFactoryValidator {
 		
 		if (device.parent.deviceHierarchy.exists[sensors.exists[name == sensor.name]]) {
 			error('''Redeclared sensor «sensor.name» must override inherited definition from parent''',
-				Literals.BASE_SENSOR__DEFINITION, MISSING_OVERRIDE
+				Literals.BASE_SENSOR__DEFINITION,
+				MISSING_OVERRIDE
 			)
+		}
+	}
+	
+	@Check
+	def validateSignalSampling(Sensor sensor) {
+		if (sensor.sampler instanceof SignalSampler) {
+			if (sensor.getContainerOfType(Device)?.inputChannel === null) {
+				error(
+					"Cannot use signal sampling on a device with no input channel",
+					Literals.SENSOR__SAMPLER,
+					MISSING_INPUT_CHANNEL
+				)
+			}
 		}
 	}
 	

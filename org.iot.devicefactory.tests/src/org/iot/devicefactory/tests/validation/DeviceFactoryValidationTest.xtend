@@ -27,11 +27,7 @@ class DeviceFactoryValidationTest {
 		'''
 		library iot.boards.*
 		language python
-		'''.parse(resourceSet).assertError(
-			Literals.DEPLOYMENT,
-			DeviceFactoryIssueCodes.MISSING_CHANNEL,
-			"There must be at least one channel"
-		)
+		'''.parse(resourceSet).assertNoErrors
 	}
 	
 	@Test def void testDeploymentNoDevice() {
@@ -41,11 +37,7 @@ class DeviceFactoryValidationTest {
 		library iot.boards.*
 		language python
 		channel endpoint
-		'''.parse(resourceSet).assertError(
-			Literals.DEPLOYMENT,
-			DeviceFactoryIssueCodes.MISSING_DEVICE,
-			"There must be at least one device"
-		)
+		'''.parse(resourceSet).assertNoErrors
 	}
 	
 	@Test def void testDeploymentMultipleFogs() {
@@ -81,11 +73,7 @@ class DeviceFactoryValidationTest {
 		library iot.boards.*
 		language python
 		channel endpoint
-		'''.parse(resourceSet).assertError(
-			Literals.DEPLOYMENT,
-			DeviceFactoryIssueCodes.MISSING_CLOUD,
-			"There must be a cloud"
-		)
+		'''.parse(resourceSet).assertNoErrors
 	}
 	
 	@Test def void testDeploymentMultipleClouds() {

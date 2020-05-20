@@ -45,6 +45,10 @@ class DeviceFactoryUtils {
 		return hierarchy
 	}
 	
+	static def getInputChannel(Device device) {
+		device.deviceHierarchy.map[input].findFirst[it !== null]
+	}
+	
 	static def org.iot.devicefactory.deviceLibrary.Sensor getDefinition(Sensor sensor) {
 		switch sensor {
 			BaseSensor: sensor.definition

@@ -105,4 +105,74 @@ class DeviceFactoryInheritanceValidationTest {
 			assertNoError(DeviceFactoryIssueCodes.MISSING_OVERRIDE)
 		]
 	}
+	
+	@Test def void testSignalSamplerInput() {
+		val resourceSet = makeRootBoardLibrary()
+		
+		'''
+		language python
+		channel endpoint
+		device controller board esp32_azure
+			in endpoint
+			sensor barometer sample signal
+				data raw_pressure
+					out endpoint
+		'''.parse(resourceSet).assertNoErrors
+	}
+	
+	@Test def void testSignalSamplerNoInput() {
+		val resourceSet = makeRootBoardLibrary()
+		
+		'''
+		language python
+		channel endpoint
+		device controller board esp32_azure
+			sensor barometer sample signal
+				data raw_pressure
+					out endpoint
+		'''.parse(resourceSet).assertError(
+			Literals.BASE_SENSOR,
+			DeviceFactoryIssueCodes.MISSING_INPUT_CHANNEL,
+			"Cannot use signal sampling on a device with no input channel"
+		)
+	}
+	
+	@Test def void testSignalSamplerInheritedInput() {
+		val resourceSet = makeRootBoardLibrary()
+		
+		'''
+		language python
+		channel endpoint
+		device controller board esp32_azure
+			in endpoint
+			sensor barometer sample frequency 10
+				data raw_pressure
+					out endpoint
+		device controller_child includes controller
+			override sensor barometer sample signal
+				data raw_pressure
+					out endpoint
+		'''.parse(resourceSet).assertNoErrors
+	}
+	
+	@Test def void testSignalSamplerNoInheritedInput() {
+		val resourceSet = makeRootBoardLibrary()
+		
+		'''
+		language python
+		channel endpoint
+		device controller board esp32_azure
+			sensor barometer sample frequency 10
+				data raw_pressure
+					out endpoint
+		device controller_child includes controller
+			override sensor barometer sample signal
+				data raw_pressure
+					out endpoint
+		'''.parse(resourceSet).assertError(
+			Literals.OVERRIDE_SENSOR,
+			DeviceFactoryIssueCodes.MISSING_INPUT_CHANNEL,
+			"Cannot use signal sampling on a device with no input channel"
+		)
+	}
 }
