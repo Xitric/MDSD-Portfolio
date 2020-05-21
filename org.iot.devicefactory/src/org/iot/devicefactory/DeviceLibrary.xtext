@@ -24,9 +24,9 @@ BaseSensorDefinition:
 ;
 
 OverrideSensorDefinition:
-	'override' 'sensor' parent=[SensorDefinition|QualifiedName] BEGIN
+	'override' 'sensor' parent=[SensorDefinition|QualifiedName] (BEGIN
 		preprocess = Preprocess
-	END
+	END)?
 ;
 
 SensorInput:

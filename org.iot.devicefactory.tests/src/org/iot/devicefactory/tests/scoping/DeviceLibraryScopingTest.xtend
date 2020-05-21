@@ -393,7 +393,6 @@ class DeviceLibraryScopingTest {
 		]
 	}
 	
-	// Pipeline scope using variable from parent preprocess only
 	@Test def void variableScope_ParentPreprocess() {
 		'''
 		define board BoardA
@@ -427,6 +426,41 @@ class DeviceLibraryScopingTest {
 			get(2).preprocess.pipeline.assertScope(
 				CommonPackage.Literals.REFERENCE__VARIABLE,
 				#["k", "l", "m"]
+			)
+		]
+	}
+	
+	@Test def void variableScope_NoPreprocess() {
+		'''
+		define board BoardA
+			sensor a pin(12, 13, 14) as (p, q, r)
+				preprocess filter[true]
+		
+		define board BoardB
+			sensor a pin(12, 13, 14) as (h, i, j)
+				preprocess filter[true]
+		
+		define board BoardC includes BoardA, BoardB
+			override sensor BoardA.a
+		
+		define board BoardD includes BoardC
+			override sensor a
+				preprocess filter[true]
+		
+		define board BoardE includes BoardA, BoardB
+			override sensor BoardB.a
+		
+		define board BoardF includes BoardE
+			override sensor a
+				preprocess filter[true]
+		'''.parse.boards => [
+			get(3).sensors.get(0).preprocess.pipeline.assertScope(
+				CommonPackage.Literals.REFERENCE__VARIABLE,
+				#["p", "q", "r"]
+			)
+			get(5).sensors.get(0).preprocess.pipeline.assertScope(
+				CommonPackage.Literals.REFERENCE__VARIABLE,
+				#["h", "i", "j"]
 			)
 		]
 	}
