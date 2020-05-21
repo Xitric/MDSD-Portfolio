@@ -37,8 +37,9 @@ class MultiInheritanceScopingUtil {
 		
 		// Create scope with simple and qualified names for all locally defined
 		// sensors
-		val localSimpleScope = board.sensors.map[EObjectDescription.create(name, it)]
-		val localQualifiedScope = board.sensors.map[EObjectDescription.create(
+		val localSensors = board.sensors.filter[name !== null]
+		val localSimpleScope = localSensors.map[EObjectDescription.create(name, it)]
+		val localQualifiedScope = localSensors.map[EObjectDescription.create(
 			QualifiedName.create(board.name, name),
 			it
 		)]

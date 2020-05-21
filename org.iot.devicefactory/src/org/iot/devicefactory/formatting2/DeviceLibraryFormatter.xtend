@@ -35,8 +35,14 @@ class DeviceLibraryFormatter extends CommonFormatter {
 		if (board.parents.isEmpty) {
 			board.regionFor.feature(Literals.BOARD__NAME).append[newLine]
 		} else {
+			board.regionFor.keyword("includes").surround[oneSpace]
 			board.regionFor.keyword(",").prepend[noSpace].append[oneSpace]
-			board.regionFor.feature(Literals.BOARD__PARENTS).append[newLine]
+			
+			var lastSemanticParentRegion = board.regionFor.feature(Literals.BOARD__PARENTS)
+			while (lastSemanticParentRegion.nextSemanticRegion.text == ",") {
+				lastSemanticParentRegion = lastSemanticParentRegion.nextSemanticRegion.nextSemanticRegion
+			}
+			lastSemanticParentRegion.append[newLine]
 		}
 		
 		board.interior[indent]
