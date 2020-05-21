@@ -8,6 +8,7 @@ import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
+import org.eclipse.xtext.scoping.impl.SimpleScope
 import org.iot.devicefactory.common.CommonPackage
 import org.iot.devicefactory.deviceFactory.ChildDevice
 import org.iot.devicefactory.deviceFactory.Cloud
@@ -16,14 +17,13 @@ import org.iot.devicefactory.deviceFactory.Device
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.deviceFactory.Fog
 import org.iot.devicefactory.deviceFactory.Sensor
-import org.iot.devicefactory.deviceLibrary.Board
-import org.iot.devicefactory.util.DeviceLibraryUtils
+import org.iot.devicefactory.deviceFactory.Transformation
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension org.iot.devicefactory.scoping.MultiInheritanceScopingUtil.*
 import static extension org.iot.devicefactory.util.CommonUtils.*
 import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
-import org.iot.devicefactory.deviceFactory.Transformation
 
 /**
  * This class contains custom scoping description.
@@ -49,15 +49,10 @@ class DeviceFactoryScopeProvider extends AbstractDeviceFactoryScopeProvider {
 	}
 	
 	private def IScope getSensorDefinitionScope(EObject context) {
-		context.getContainerOfType(Device).board.boardSensorScope
-	}
-	
-	private def IScope getBoardSensorScope(Board board) {
-		if (board === null || board.eIsProxy) {
-			IScope.NULLSCOPE
-		} else {
-			Scopes.scopeFor(board.sensors, QualifiedName.wrapper[DeviceLibraryUtils.getName(it)], board.parent.boardSensorScope)
-		}
+		// Also returns qualified names, but this is not a problem since they
+		// are automatically filtered away by Eclipse
+		val boardScope = context.getContainerOfType(Device).board.boardSensorScope
+		new SimpleScope(boardScope.allElements.removeDuplicates)
 	}
 	
 	private def IScope getParentSensorScope(EObject context) {

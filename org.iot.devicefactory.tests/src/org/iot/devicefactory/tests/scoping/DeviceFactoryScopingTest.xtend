@@ -36,7 +36,7 @@ class DeviceFactoryScopingTest {
 					out endpoint
 		'''.parse(resourceSet).devices.get(0).sensors.get(0).assertScope(
 			Literals.BASE_SENSOR__DEFINITION,
-			#["barometer"]
+			#["barometer", "esp32.barometer"]
 		)
 	}
 	
@@ -53,7 +53,7 @@ class DeviceFactoryScopingTest {
 					out endpoint
 		'''.parse(resourceSet).devices.get(0).sensors.get(0).assertScope(
 			Literals.BASE_SENSOR__DEFINITION,
-			#["barometer", "thermistor"]
+			#["barometer", "thermistor", "esp32_azure_v2.barometer", "esp32_azure_v2.thermistor"]
 		)
 	}
 	
@@ -75,7 +75,7 @@ class DeviceFactoryScopingTest {
 					out endpoint
 		'''.parse(resourceSet).devices.get(1).sensors.get(0).assertScope(
 			Literals.BASE_SENSOR__DEFINITION,
-			#["barometer", "thermistor"]
+			#["barometer", "thermistor", "esp32_azure_v2.barometer", "esp32_azure_v2.thermistor"]
 		)
 	}
 	
@@ -93,6 +93,44 @@ class DeviceFactoryScopingTest {
 			Literals.BASE_SENSOR__DEFINITION,
 			#[]
 		)
+	}
+	
+	@Test def void testSensorScopeMultiInheritance() {
+		val resourceSet = makeInheritanceBoardLibrary()
+		
+		'''
+		language python
+		channel endpoint
+		device controllerA board BoardD
+			sensor a sample signal
+				data raw_pressure
+					out endpoint
+		
+		device controllerB board BoardF
+			sensor a sample signal
+				data raw_pressure
+					out endpoint
+		
+		device controllerB board BoardG
+			sensor a sample signal
+				data raw_pressure
+					out endpoint
+		'''.parse(resourceSet).devices => [
+			get(0).sensors.get(0).assertScope(
+				Literals.BASE_SENSOR__DEFINITION,
+				#["a", "b", "BoardD.a", "BoardD.b"]
+			)
+			
+			get(1).sensors.get(0).assertScope(
+				Literals.BASE_SENSOR__DEFINITION,
+				#["a", "b", "e", "f", "BoardF.a", "BoardF.b", "BoardF.e", "BoardF.f"]
+			)
+			
+			get(2).sensors.get(0).assertScope(
+				Literals.BASE_SENSOR__DEFINITION,
+				#["a", "b", "e", "f", "BoardG.a", "BoardG.b", "BoardG.e", "BoardG.f"]
+			)
+		]
 	}
 	
 	@Test def void testOutVariableScopeBaseDefinition() {
