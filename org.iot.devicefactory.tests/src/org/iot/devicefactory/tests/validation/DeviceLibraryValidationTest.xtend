@@ -133,6 +133,43 @@ class DeviceLibraryValidationTest {
 		'''.parse.assertDuplicateSensors("a")
 	}
 	
+	@Test def void testDuplicateSensorsQualifiedNames() {
+		'''
+		define board BoardA
+			sensor a pin(12) as p
+		
+		define board BoardB
+			sensor a pin(12) as p
+		
+		define board BoardC includes BoardA, BoardB
+			override sensor a
+				preprocess filter[true]
+			override sensor BoardA.a
+				preprocess filter[true]
+			override sensor BoardB.a
+				preprocess filter[true]
+		'''.parse.assertDuplicateSensors("a")
+	}
+	
+	@Test def void testDuplicateSensorsDifferentReferences() {
+		'''
+		define board BoardA
+			sensor a pin(12) as p
+		
+		define board BoardB includes BoardA
+			sensor b pin(12) as p
+		
+		define board BoardC includes BoardA
+			sensor c pin(12) as p
+		
+		define board BoardD includes BoardB, BoardC
+			override sensor BoardB.a
+				preprocess filter[true]
+			override sensor BoardC.a
+				preprocess filter[true]
+		'''.parse.assertDuplicateSensors("a")
+	}
+	
 	private def assertDuplicateSensors(Library library, String sensorName) {
 		library.assertError(
 			Literals.SENSOR_DEFINITION,
@@ -147,6 +184,43 @@ class DeviceLibraryValidationTest {
 			sensor a pin(12) as p
 		
 		define board BoardB includes BoardA
+			sensor a pin(12) as p
+		'''.parse.assertError(
+			Literals.SENSOR_DEFINITION,
+			DeviceLibraryIssueCodes.NON_OVERRIDING_SENSOR,
+			"Redeclared sensor a must override inherited definition from parent"
+		)
+	}
+	
+	@Test def void testMissingOverrideInheritanceConflict() {
+		'''
+		define board BoardA
+			sensor a pin(12) as p
+		
+		define board BoardB
+			sensor a pin(12) as p
+		
+		define board BoardC includes BoardB, BoardA
+			sensor a pin(12) as p
+		'''.parse.assertError(
+			Literals.SENSOR_DEFINITION,
+			DeviceLibraryIssueCodes.NON_OVERRIDING_SENSOR,
+			"Redeclared sensor a must override inherited definition from parent"
+		)
+	}
+	
+	@Test def void testMissingOverrideMultiInheritance() {
+		'''
+		define board BoardA
+			sensor a pin(12) as p
+		
+		define board BoardB includes BoardA
+			sensor b pin(12) as p
+		
+		define board BoardC
+			sensor b pin(12) as p
+		
+		define board BoardD includes BoardC, BoardB
 			sensor a pin(12) as p
 		'''.parse.assertError(
 			Literals.SENSOR_DEFINITION,
@@ -178,6 +252,42 @@ class DeviceLibraryValidationTest {
 			Diagnostic.LINKING_DIAGNOSTIC,
 			"Couldn't resolve reference to SensorDefinition 'b'."
 		)
+	}
+	
+	@Test def void testRequiredOverride() {
+		'''
+		define board BoardA
+			sensor a pin(12) as p
+		
+		define board BoardB includes BoardA
+			sensor b pin(12) as p
+		
+		define board BoardC
+			sensor a pin(12) as p
+		
+		define board BoardD includes BoardB, BoardC
+			sensor d pin(12) as p
+		'''.parse.assertError(
+			Literals.BOARD,
+			DeviceLibraryIssueCodes.INHERITANCE_CONFLICT,
+			"Sensor with identifier a refers to multiple inherited definitions. Resolve this ambiguity by explicitly overriding one of them"
+		)
+	}
+	
+	@Test def void testNoRequiredOverrideDiamond() {
+		'''
+		define board BoardA
+			sensor a pin(12) as p
+		
+		define board BoardB includes BoardA
+			sensor b pin(12) as p
+		
+		define board BoardC includes BoardA
+			sensor c pin(12) as p
+		
+		define board BoardD includes BoardB, BoardC
+			sensor d pin(12) as p
+		'''.parse.assertNoError(DeviceLibraryIssueCodes.INHERITANCE_CONFLICT)
 	}
 	
 	@Test def void testDuplicateVariables() {

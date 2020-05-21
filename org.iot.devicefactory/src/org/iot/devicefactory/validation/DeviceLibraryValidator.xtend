@@ -3,6 +3,10 @@
  */
 package org.iot.devicefactory.validation
 
+import com.google.inject.Inject
+import java.util.HashMap
+import org.eclipse.emf.common.util.URI
+import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.validation.Check
 import org.iot.devicefactory.deviceLibrary.BaseSensorDefinition
 import org.iot.devicefactory.deviceLibrary.Board
@@ -12,6 +16,7 @@ import org.iot.devicefactory.deviceLibrary.Library
 import org.iot.devicefactory.deviceLibrary.OverrideSensorDefinition
 import org.iot.devicefactory.deviceLibrary.Pin
 import org.iot.devicefactory.deviceLibrary.SensorDefinition
+import org.iot.devicefactory.scoping.DeviceLibraryScopeProvider
 
 import static org.iot.devicefactory.validation.DeviceLibraryIssueCodes.*
 
@@ -25,6 +30,8 @@ import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
+	
+	@Inject DeviceLibraryScopeProvider scopeProvider
 	
 	@Check
 	def validatePackage(Library library) {
@@ -67,11 +74,33 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 	
 	@Check
 	def validateChildSensorsOverride(BaseSensorDefinition sensor) {
-		val board = sensor.getContainerOfType(Board)
-		if (board.parent.boardHierarchy.exists[sensors.exists[name == sensor.name]]) {
+		val sensorScope = scopeProvider.getScope(sensor, Literals.OVERRIDE_SENSOR_DEFINITION__PARENT)
+		val allSensors = sensorScope.allElements.map[EObjectOrProxy as SensorDefinition]
+		if (allSensors.exists[name == sensor.name]) {
 			error('''Redeclared sensor «sensor.name» must override inherited definition from parent''',
-				Literals.BASE_SENSOR_DEFINITION__NAME, NON_OVERRIDING_SENSOR
+				Literals.BASE_SENSOR_DEFINITION__NAME,
+				NON_OVERRIDING_SENSOR
 			)
+		}
+	}
+	
+	@Check
+	def validateAmbiguousInheritance(Board board) {
+		val sensorScope = scopeProvider.getScope(board, Literals.OVERRIDE_SENSOR_DEFINITION__PARENT)
+		val allSensors = sensorScope.allElements
+		val visited = new HashMap<String, URI>
+		
+		for (IEObjectDescription desc: allSensors) {
+			val uri = desc.EObjectURI
+			val name = (desc.EObjectOrProxy as SensorDefinition).name
+			if (visited.get(name) !== null && visited.get(name) != uri) {
+				error('''Sensor with identifier «name» refers to multiple inherited definitions. Resolve this ambiguity by explicitly overriding one of them''',
+					Literals.BOARD__NAME,
+					INHERITANCE_CONFLICT
+				)
+				return
+			}
+			visited.put(name, uri)
 		}
 	}
 	
