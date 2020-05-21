@@ -290,6 +290,105 @@ class DeviceLibraryValidationTest {
 		'''.parse.assertNoError(DeviceLibraryIssueCodes.INHERITANCE_CONFLICT)
 	}
 	
+	@Test def void testRequiredOverrideResolved() {
+		'''
+		define board BoardA
+			sensor a pin(12) as p
+		
+		define board BoardB
+			sensor a pin(12) as p
+		
+		define board BoardC includes BoardA, BoardB
+			override sensor BoardA.a
+		'''.parse.assertNoError(DeviceLibraryIssueCodes.INHERITANCE_CONFLICT)
+	}
+	
+	@Test def void testRequiredPreprocess() {
+		'''
+		define board BoardA
+			sensor a pin(12) as p
+		
+		define board BoardB includes BoardA
+			override sensor a
+		'''.parse.assertError(
+			Literals.OVERRIDE_SENSOR_DEFINITION,
+			DeviceLibraryIssueCodes.REQUIRED_PREPROCESS,
+			"A preprocess step is required on overrides that do not resolve a conflict due to multiple inheritance"
+		)
+	}
+	
+	@Test def void testRequiredPreprocessPreviouslyResolved() {
+		'''
+		define board BoardA
+			sensor a pin(12) as p
+		
+		define board BoardB
+			sensor a pin(12) as p
+		
+		define board BoardC includes BoardA, BoardB
+			override sensor BoardB.a
+		
+		define board BoardD includes BoardC
+			override sensor a
+		'''.parse.assertError(
+			Literals.OVERRIDE_SENSOR_DEFINITION,
+			DeviceLibraryIssueCodes.REQUIRED_PREPROCESS,
+			"A preprocess step is required on overrides that do not resolve a conflict due to multiple inheritance"
+		)
+	}
+	
+	@Test def void testNoRequiredPreprocess() {
+		'''
+		define board BoardA
+			sensor a pin(12) as p
+		
+		define board BoardB
+			sensor a pin(12) as p
+		
+		define board BoardC includes BoardA, BoardB
+			override sensor BoardB.a
+		
+		define board BoardD includes BoardA
+			sensor d i2c(0x5f) as (d, j)
+		
+		define board BoardE includes BoardB, BoardD
+			override sensor BoardD.a
+		
+		define board BoardF includes BoardC, BoardE
+			override sensor BoardC.a
+		'''.parse.assertNoError(DeviceLibraryIssueCodes.REQUIRED_PREPROCESS)
+	}
+	
+	@Test def void testDuplicateIncludes() {
+		'''
+		define board BoardA
+			sensor a pin(12) as p
+		
+		define board BoardB
+			sensor a pin(12) as p
+		
+		define board BoardC includes BoardA, BoardB, BoardA
+			override sensor BoardB.a
+		'''.parse.assertError(
+			Literals.BOARD,
+			DeviceLibraryIssueCodes.DUPLICATE_INCLUDE,
+			"BoardA appears multiple times in includes statement"
+		)
+	}
+	
+	@Test def void testNoDuplicateIncludes() {
+		'''
+		define board BoardA
+			sensor a pin(12) as p
+		
+		define board BoardB
+			sensor a pin(12) as p
+		
+		define board BoardC includes BoardA, BoardB
+			override sensor BoardB.a
+		'''.parse.assertNoErrors(DeviceLibraryIssueCodes.DUPLICATE_INCLUDE)
+	}
+	
 	@Test def void testDuplicateVariables() {
 		'''
 		define board BoardA

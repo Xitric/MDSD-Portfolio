@@ -38,15 +38,27 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 		val segments = library.eResource.URI.segments
 		
 		if (segments.get(0) != "resource" || segments.get(2) != "src") {
-			error("A board library must be located inside the src folder of an Eclipse project", Literals.LIBRARY__NAME)
+			error(
+				"A board library must be located inside the src folder of an Eclipse project",
+				Literals.LIBRARY__NAME
+			)
 		} else if(segments.length == 4) {
 			if (library.name !== null) {
-				error("There cannot be a package declaration in library files located outside a package", Literals.LIBRARY__NAME, ILLEGAL_PACKAGE)
+				error(
+					"There cannot be a package declaration in library files located outside a package",
+					Literals.LIBRARY__NAME,
+					ILLEGAL_PACKAGE
+				)
 			}
 		} else {
 			val expectedPackage = segments.subList(3, segments.length - 1).join(".")
 			if (library.name != expectedPackage) {
-				error('''Incorrect package name, expected «expectedPackage»''', Literals.LIBRARY__NAME, INCORRECT_PACKAGE, expectedPackage)
+				error(
+					'''Incorrect package name, expected «expectedPackage»''',
+					Literals.LIBRARY__NAME,
+					INCORRECT_PACKAGE,
+					expectedPackage
+				)
 			}
 		}
 	}
@@ -77,7 +89,8 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 		val sensorScope = scopeProvider.getScope(sensor, Literals.OVERRIDE_SENSOR_DEFINITION__PARENT)
 		val allSensors = sensorScope.allElements.map[name.lastSegment]
 		if (allSensors.exists[it == sensor.name]) {
-			error('''Redeclared sensor «sensor.name» must override inherited definition from parent''',
+			error(
+				'''Redeclared sensor «sensor.name» must override inherited definition from parent''',
 				Literals.BASE_SENSOR_DEFINITION__NAME,
 				NON_OVERRIDING_SENSOR
 			)
@@ -94,13 +107,55 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 			val uri = desc.EObjectURI
 			val name = desc.name.lastSegment
 			if (visited.get(name) !== null && visited.get(name) != uri) {
-				error('''Sensor with identifier «name» refers to multiple inherited definitions. Resolve this ambiguity by explicitly overriding one of them''',
-					Literals.BOARD__NAME,
-					INHERITANCE_CONFLICT
+				if (! board.sensors.filter(OverrideSensorDefinition).exists[it.name == name]) {
+					error(
+						'''Sensor with identifier «name» refers to multiple inherited definitions. Resolve this ambiguity by explicitly overriding one of them''',
+						Literals.BOARD__NAME,
+						INHERITANCE_CONFLICT
+					)
+					return
+				}
+			}
+			visited.put(name, uri)
+		}
+	}
+	
+	@Check
+	def validatePreprocessWhenRequired(OverrideSensorDefinition sensor) {
+		if (sensor.preprocess !== null) {
+			return
+		}
+		
+		val sensorScope = scopeProvider.getScope(sensor, Literals.OVERRIDE_SENSOR_DEFINITION__PARENT)
+		val sensorsByName = sensorScope.allElements.filter[
+			name.lastSegment == sensor.parent.name
+		].groupBy[EObjectURI]
+		
+		if (sensorsByName.size === 1) {
+			error(
+				'''A preprocess step is required on overrides that do not resolve a conflict due to multiple inheritance''',
+				Literals.SENSOR_DEFINITION__PREPROCESS,//TODO: Consider parent feature
+				REQUIRED_PREPROCESS
+			)
+		}
+	}
+	
+	@Check
+	def validateNoDuplicateIncludes(Board board) {
+		if (board.parents.size < 2) {
+			return
+		}
+		
+		for (var i = 1; i < board.parents.size; i++) {
+			val parent = board.parents.get(i)
+			if (board.parents.subList(0, i).exists[it.name == parent.name]) {
+				error(
+					'''«parent.name» appears multiple times in includes statement''',
+					Literals.BOARD__PARENTS,
+					DeviceLibraryIssueCodes.DUPLICATE_INCLUDE
 				)
 				return
 			}
-			visited.put(name, uri)
 		}
 	}
 	
