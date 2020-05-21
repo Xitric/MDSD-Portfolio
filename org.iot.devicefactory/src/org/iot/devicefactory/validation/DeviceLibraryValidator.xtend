@@ -75,8 +75,8 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 	@Check
 	def validateChildSensorsOverride(BaseSensorDefinition sensor) {
 		val sensorScope = scopeProvider.getScope(sensor, Literals.OVERRIDE_SENSOR_DEFINITION__PARENT)
-		val allSensors = sensorScope.allElements.map[EObjectOrProxy as SensorDefinition]
-		if (allSensors.exists[name == sensor.name]) {
+		val allSensors = sensorScope.allElements.map[name.lastSegment]
+		if (allSensors.exists[it == sensor.name]) {
 			error('''Redeclared sensor «sensor.name» must override inherited definition from parent''',
 				Literals.BASE_SENSOR_DEFINITION__NAME,
 				NON_OVERRIDING_SENSOR
@@ -92,7 +92,7 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 		
 		for (IEObjectDescription desc: allSensors) {
 			val uri = desc.EObjectURI
-			val name = (desc.EObjectOrProxy as SensorDefinition).name
+			val name = desc.name.lastSegment
 			if (visited.get(name) !== null && visited.get(name) != uri) {
 				error('''Sensor with identifier «name» refers to multiple inherited definitions. Resolve this ambiguity by explicitly overriding one of them''',
 					Literals.BOARD__NAME,
