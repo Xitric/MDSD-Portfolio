@@ -3,11 +3,17 @@
  */
 package org.iot.devicefactory.scoping
 
+import com.google.common.collect.Iterables
+import java.util.ArrayList
+import java.util.LinkedHashSet
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.naming.QualifiedName
+import org.eclipse.xtext.resource.EObjectDescription
+import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
+import org.eclipse.xtext.scoping.impl.SimpleScope
 import org.iot.devicefactory.common.CommonPackage
 import org.iot.devicefactory.deviceLibrary.Board
 import org.iot.devicefactory.deviceLibrary.DeviceLibraryPackage.Literals
@@ -17,6 +23,7 @@ import org.iot.devicefactory.deviceLibrary.SensorDefinition
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.CommonUtils.*
 import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
+import static extension org.iot.devicefactory.util.QualifiedNameUtils.*
 
 /**
  * This class contains custom scoping description.
@@ -28,7 +35,7 @@ class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
 	
 	override getScope(EObject context, EReference reference) {
 		switch reference {
-			case Literals.BOARD__PARENT:
+			case Literals.BOARD__PARENTS:
 				context.boardParentScope
 			case Literals.OVERRIDE_SENSOR_DEFINITION__PARENT:
 				context.sensorScope
@@ -44,16 +51,118 @@ class DeviceLibraryScopeProvider extends AbstractDeviceLibraryScopeProvider {
 		Scopes.scopeFor(library.boards.takeWhile[it !== context])
 	}
 	
-	private def IScope getSensorScope(EObject context) {
-		context.getContainerOfType(Board).parent.boardSensorScope
-	}
+	//TODO:
+//	private def IScope getSensorScope(EObject context) {
+//		context.getContainerOfType(Board).boardSensorScope
+//	}
+//	
+//	private def IScope getBoardSensorScope(Board board) {
+////		if (board === null) {
+////			IScope.NULLSCOPE
+////		} else {
+////			Scopes.scopeFor(board.sensors, QualifiedName.wrapper[name], board.parent.boardSensorScope)
+////		}
+//		IScope.NULLSCOPE
+//	}
 	
-	private def IScope getBoardSensorScope(Board board) {
+	private def IScope getSensorScope(EObject context) {
+		val board = context.getContainerOfType(Board)
+		
 		if (board === null) {
 			IScope.NULLSCOPE
 		} else {
-			Scopes.scopeFor(board.sensors, QualifiedName.wrapper[name], board.parent.boardSensorScope)
+			val parentScopes = board.parents.map[boardSensorScope].flatMap[allElements]
+			
+			// Remove duplicate names (will only remove simple names, since all
+			// qualified names are unique)
+			val filteredParentScope = parentScopes.filter[ desc |
+				parentScopes.findFirst[name == desc.name].EObjectURI == parentScopes.findLast[name == desc.name].EObjectURI
+			]
+			
+			// If an object can be reached in multiple ways, we only include it
+			// once in the resulting scope
+			val uniqueParentScope = new ArrayList<IEObjectDescription>()
+			for (IEObjectDescription desc: filteredParentScope) {
+				if (! uniqueParentScope.exists[name == desc.name && EObjectURI == desc.EObjectURI]) {
+					uniqueParentScope.add(desc)
+				}
+			}
+			
+			
+//			val uniqueParentScope = filteredParentScope.filter[ desc |
+//				val h = filteredParentScope.takeWhile[it !== desc]
+//				println(desc + ": " + Iterables.toString(h))
+//				! filteredParentScope.takeWhile[it !== desc].exists[
+////					EObjectURI == desc.EObjectURI
+////					println(name + " == " + desc.name)
+//					name == desc.name
+//				]
+//			]
+			
+			new LinkedHashSet()
+			
+			new SimpleScope(uniqueParentScope)
 		}
+	}
+	
+	// Factory scoping provider can use this method directly. It does not
+	// matter that we also add qualified names to the scope, because the
+	// factory only allows for using simple names anyway, so the qualified
+	// names are automatically filtered out by Eclipse
+	// TODO: we can skip some logic if we only have one parent
+	private def IScope getBoardSensorScope(Board board) {
+		// Get all inherited definitions, possible with duplicate elements
+		// Consists of both simple and qualified names from each parent
+		val parentScopes = board.parents.map[boardSensorScope].flatMap[allElements]
+		
+		// Remove qualified names and duplicates from parents
+		// Removing duplicates is not an issue, since clients are expected to
+		// override duplicate definitions locally
+		val filteredParentScope = parentScopes.filter[ desc |
+			desc.name.segmentCount == 1 &&
+			parentScopes.findFirst[name == desc.name].EObjectURI == parentScopes.findLast[name == desc.name].EObjectURI
+		]
+		
+		// Add prefix to names inherited from parents
+		val qualifiedParentScope = filteredParentScope.map[EObjectDescription.create(
+			it.name.prepend(board.name),
+			it.EObjectOrProxy
+		)]
+		val outerScope = new SimpleScope(Iterables.concat(filteredParentScope, qualifiedParentScope))
+		
+		// Create scope with simple and qualified names for all locally defined
+		// sensors
+		val localSimpleScope = board.sensors.map[EObjectDescription.create(name, it)]
+		val localQualifiedScope = board.sensors.map[EObjectDescription.create(
+			QualifiedName.create(board.name, name),
+			it
+		)]
+		val localScope = Iterables.concat(localSimpleScope, localQualifiedScope)
+		
+		// Return a scope where local definitions shadow inherited definitions
+		new SimpleScope(outerScope, localScope)
+		
+		
+//		// TODO: we can skip some logic if we only have one parent
+//		
+//		// Collect all elements from parents
+//		val parentScopes = board.parents.map[boardSensorScope]
+//		
+//		// This step removes all shadowed elements and flattens the hierarchy to a single level
+//		val combinedParentScope = new SimpleScope(parentScopes.flatMap[allElements])
+//		
+//		// Remove all inherited duplicates and fully qualified names (shadowed elements are already gone)
+//		val uniqueSimpleNames = new FilteringScope(combinedParentScope, [
+//			name.segmentCount > 1 || combinedParentScope.getElements(name).size > 1
+//		])
+//		
+//		// Create local scope consisting of all sensors with simple and qualified names
+//		val localSimpleDescriptions = board.sensors.map[EObjectDescription.create(name, it)]
+//		val localQualifiedDescriptions = board.sensors.map[EObjectDescription.create(QualifiedName.create(board.name, name), it)]
+//		val localDescriptions = Iterables.concat(localSimpleDescriptions, localQualifiedDescriptions)
+//		
+//		// Return scope with local sensors in local scope, and uniqueSimpleNames in outer scope
+//		new SimpleScope(uniqueSimpleNames, localDescriptions)
 	}
 	
 	private def IScope getReferenceVariableScope(EObject context) {

@@ -1,5 +1,7 @@
 package org.iot.devicefactory.util
 
+import com.google.common.collect.Iterables
+import java.util.Collections
 import org.eclipse.xtext.naming.QualifiedName
 
 class QualifiedNameUtils {
@@ -18,5 +20,11 @@ class QualifiedNameUtils {
 		}
 
 		return true
+	}
+	
+	static def prepend(QualifiedName original, String prefix) {
+		val originalNameSegments = original.segments
+		val prefixedSegments = Iterables.concat(Collections.singleton(prefix), originalNameSegments)
+		QualifiedName.create(prefixedSegments)
 	}
 }

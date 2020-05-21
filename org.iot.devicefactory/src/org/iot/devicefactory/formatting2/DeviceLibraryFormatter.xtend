@@ -32,10 +32,11 @@ class DeviceLibraryFormatter extends CommonFormatter {
 		board.regionFor.keyword("define").prepend[noSpace]
 		board.regionFor.keyword("board").surround[oneSpace]
 		
-		if (board.parent === null) {
+		if (board.parents.isEmpty) {
 			board.regionFor.feature(Literals.BOARD__NAME).append[newLine]
 		} else {
-			board.regionFor.feature(Literals.BOARD__PARENT).append[newLine]
+			board.regionFor.keyword(",").prepend[noSpace].append[oneSpace]
+			board.regionFor.feature(Literals.BOARD__PARENTS).append[newLine]
 		}
 		
 		board.interior[indent]

@@ -32,19 +32,6 @@ class DeviceFactoryUtils {
 		}
 		return hierarchy
 	}
-
-	static def getSensorHierarchy(Sensor sensor) {
-		val hierarchy = new ArrayList<Sensor>()
-		var current = sensor
-		while (current !== null) {
-			hierarchy.add(current)
-			current = switch current {
-				BaseSensor: null
-				OverrideSensor: current.parent
-			}
-		}
-		return hierarchy
-	}
 	
 	static def getInputChannel(Device device) {
 		device.deviceHierarchy.map[input].findFirst[it !== null]

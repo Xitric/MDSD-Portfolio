@@ -8,7 +8,7 @@ Library:
 ;
 
 Board:
-	'define' 'board' name=ID ('includes' parent=[Board|QualifiedName])? BEGIN
+	'define' 'board' name=ID ('includes' parents+=[Board|QualifiedName] (',' parents+=[Board|QualifiedName])*)? BEGIN
 		sensors += SensorDefinition+
 	END
 ;
@@ -24,7 +24,7 @@ BaseSensorDefinition:
 ;
 
 OverrideSensorDefinition:
-	'override' 'sensor' parent=[SensorDefinition] BEGIN
+	'override' 'sensor' parent=[SensorDefinition|QualifiedName] BEGIN
 		preprocess = Preprocess
 	END
 ;
