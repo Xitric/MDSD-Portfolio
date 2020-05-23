@@ -4,6 +4,7 @@ import org.iot.devicefactory.common.Variable
 import org.iot.devicefactory.deviceLibrary.BaseSensorDefinition
 import org.iot.devicefactory.deviceLibrary.OverrideSensorDefinition
 import org.iot.devicefactory.deviceLibrary.SensorDefinition
+import org.iot.devicefactory.deviceLibrary.SensorInput
 
 import static extension org.iot.devicefactory.util.CommonUtils.*
 
@@ -13,6 +14,13 @@ class DeviceLibraryUtils {
 		switch sensor {
 			BaseSensorDefinition: sensor.name
 			OverrideSensorDefinition: sensor.parent.name
+		}
+	}
+	
+	static def SensorInput getInput(SensorDefinition sensor) {
+		switch sensor {
+			BaseSensorDefinition: sensor.input
+			OverrideSensorDefinition: sensor.parent.input
 		}
 	}
 	

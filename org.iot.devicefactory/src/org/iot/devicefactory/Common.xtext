@@ -98,7 +98,7 @@ Not returns Expression:
 ;
 
 Primary returns Expression:
-	Parentheses | NumberLiteral | BooleanLiteral | Reference | StringLiteral
+	Parentheses | NumberLiteral | BooleanLiteral | StringLiteral | Reference
 ;
 
 Parentheses returns Expression:

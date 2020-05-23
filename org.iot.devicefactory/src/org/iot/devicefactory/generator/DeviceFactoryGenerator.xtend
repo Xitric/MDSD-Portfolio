@@ -9,6 +9,7 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import org.iot.devicefactory.deviceFactory.Channel
 import org.iot.devicefactory.deviceFactory.Language
 import org.iot.devicefactory.generator.python.PythonGenerator
 
@@ -22,10 +23,15 @@ class DeviceFactoryGenerator extends AbstractGenerator {
 	final Set<LanguageGenerator> languageGenerators
 
 	@Inject new(PythonGenerator pythonGenerator) {
+		// I would have liked to use a collection injection from Guice, but
+		// that is not supported in this version of Xtext. I instead fall back
+		// to this sub-optimal solution
 		this.languageGenerators = #{pythonGenerator}
 	}
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
+		fsa.generateFile("config.json", resource.allContents.toIterable.filter(Channel).compile)
+		
 		val targetLanguage = resource.allContents.filter(Language).head.name
 		val generator = languageGenerators.findFirst[language == targetLanguage]
 		generator.generate(resource, fsa, context)
@@ -33,5 +39,27 @@ class DeviceFactoryGenerator extends AbstractGenerator {
 	
 	def getSupportedLanguages() {
 		return languageGenerators.map[language]
+	}
+	
+	private def String compile(Iterable<Channel> channels) {
+		'''
+		{
+			"wifi": {
+				"ssid": "",
+				"password": "",
+				"cloud": ""
+			},
+			"serial": {
+				"baud": "",
+				"databits": "",
+				"paritybits": "",
+				"stopbit": ""
+			}«FOR channel : channels»,
+			«channel.name»: {
+				"type": "",
+				"lane": ""
+			}«ENDFOR»
+		}
+		'''
 	}
 }

@@ -46,7 +46,7 @@ Workflow {
 				generateXtendStub = true
 			}
 			generator = {
-				generateXtendStub = true
+				generateStub = false
 			}
 			junitSupport = {
 				junitVersion = "5"
@@ -67,7 +67,9 @@ Workflow {
 				generateXtendStub = true
 			}
 			generator = {
-				generateXtendStub = true
+				// Should not generate on its own, but is invoked when used by
+				// a deployment
+				generateStub = false
 			}
 			junitSupport = {
 				junitVersion = "5"

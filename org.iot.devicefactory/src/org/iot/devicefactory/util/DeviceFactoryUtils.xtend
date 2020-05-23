@@ -5,6 +5,7 @@ import org.eclipse.emf.ecore.EObject
 import org.iot.devicefactory.common.Variable
 import org.iot.devicefactory.deviceFactory.BaseDevice
 import org.iot.devicefactory.deviceFactory.BaseSensor
+import org.iot.devicefactory.deviceFactory.Channel
 import org.iot.devicefactory.deviceFactory.ChildDevice
 import org.iot.devicefactory.deviceFactory.Cloud
 import org.iot.devicefactory.deviceFactory.Data
@@ -12,8 +13,10 @@ import org.iot.devicefactory.deviceFactory.Deployment
 import org.iot.devicefactory.deviceFactory.Device
 import org.iot.devicefactory.deviceFactory.Fog
 import org.iot.devicefactory.deviceFactory.OverrideSensor
+import org.iot.devicefactory.deviceFactory.Sampler
 import org.iot.devicefactory.deviceFactory.Sensor
 import org.iot.devicefactory.deviceLibrary.SensorDefinition
+import org.iot.devicefactory.deviceLibrary.SensorInput
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.util.DeviceLibraryUtils.*
@@ -48,6 +51,17 @@ class DeviceFactoryUtils {
 		sensor.definition.name
 	}
 	
+	static def SensorInput getInput(Sensor sensor) {
+		sensor.definition.input
+	}
+	
+	static def Sampler getSampler(Sensor sensor) {
+		switch sensor {
+			BaseSensor: sensor.sampler
+			OverrideSensor: sensor.sampler ?: getSampler(sensor.parent)
+		}
+	}
+	
 	static def Iterable<Variable> getVariables(Sensor sensor) {
 		sensor.definition?.variables ?: emptyList
 	}
@@ -57,6 +71,13 @@ class DeviceFactoryUtils {
 		switch top {
 			BaseDevice: top.board
 			ChildDevice: null
+		}
+	}
+	
+	static def Channel getInput(Device device) {
+		switch device {
+			BaseDevice: device.input
+			ChildDevice: device.input ?: getInput(device.parent)
 		}
 	}
 

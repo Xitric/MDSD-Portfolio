@@ -63,7 +63,7 @@ Sensor:
 
 // This is how I would have liked to represent it
 //BaseSensor:
-//	'sensor' definition=[Library::Sensor] sampler=Sampler
+//	'sensor' definition=[Library::SensorDefinition] sampler=Sampler
 //;
 //
 //OverrideSensor:
