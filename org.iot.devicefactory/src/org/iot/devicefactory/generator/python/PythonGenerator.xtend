@@ -31,7 +31,7 @@ class PythonGenerator implements LanguageGenerator {
 	}
 
 	override generate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-		resource.allContents.filter(Device).forEach[generateDevice(fsa)]
+		resource.allContents.filter(Device).filter[! isAbstract].forEach[generateDevice(fsa)]
 		
 		// TODO: Generate fog and cloud
 	}
