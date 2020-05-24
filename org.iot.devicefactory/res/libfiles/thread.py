@@ -38,7 +38,6 @@ class Thread:
         except (KeyboardInterrupt, SystemExit):
             pass
         finally:
-            # print("Stopped " + str(self.name))
             self.active = False
             self.state_lock.release()
             _thread.exit()

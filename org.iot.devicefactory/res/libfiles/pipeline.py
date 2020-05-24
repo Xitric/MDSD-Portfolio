@@ -33,4 +33,4 @@ class Pipeline:
         return self
     
     def handle(self, x):
-        self.head.handle(x)
+        return self.head.handle(x)

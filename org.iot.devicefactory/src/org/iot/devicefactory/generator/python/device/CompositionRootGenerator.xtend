@@ -13,9 +13,6 @@ import org.iot.devicefactory.deviceLibrary.I2C
 import org.iot.devicefactory.deviceLibrary.Pin
 import org.iot.devicefactory.generator.python.GeneratorEnvironment
 import org.iot.devicefactory.generator.python.GeneratorUtils
-import org.iot.devicefactory.typing.ExpressionType
-import org.iot.devicefactory.typing.ExpressionTypeChecker
-import org.iot.devicefactory.typing.TupleExpressionType
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension org.iot.devicefactory.generator.python.GeneratorUtils.*
@@ -24,7 +21,6 @@ import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
 
 class CompositionRootGenerator {
 
-	@Inject extension ExpressionTypeChecker
 	@Inject extension GeneratorUtils
 
 	def String compile(Device device, GeneratorEnvironment env) {
@@ -79,8 +75,8 @@ class CompositionRootGenerator {
 				«FOR sensor : device.allSensors»
 					«device.name.asInstance».add_sensor("«sensor.name.asModule»", self.«sensor.providerName»())
 				«ENDFOR»
-				«IF device.input !== null»«device.name.asInstance».set_input_channel(self.«env.useChannel(device.input).providerName»())«ENDIF»
-				«FOR channel : env.channels.filter[it != device.input]»
+				«IF getInput(device) !== null»«device.name.asInstance».set_input_channel(self.«env.useChannel(getInput(device)).providerName»())«ENDIF»
+				«FOR channel : env.channels.filter[it != getInput(device)]»
 					«device.name.asInstance».add_output_channel(self.«channel.providerName»())
 				«ENDFOR»
 				return «device.name.asInstance»
@@ -130,7 +126,7 @@ class CompositionRootGenerator {
 
 		val sink = '''
 		type('Sink', (object,), {
-			"handle": lambda data: «out.channel.name.asInstance».send(«out.pipeline.compileDataConversion(env)»),
+			"handle": lambda data: «out.channel.name.asInstance».send(data),
 			"next": None
 		})'''
 
@@ -141,23 +137,6 @@ class CompositionRootGenerator {
 					«out.pipeline.compilePipelineComposition(sink, env)»
 				)
 		'''
-	}
-
-	private def String compileDataConversion(Pipeline pipeline, GeneratorEnvironment env) {
-		env.useImport("struct")
-
-		switch pipeline.outputTypeOfPipeline {
-			// TODO: How the hell do we send a tuple ?!
-			TupleExpressionType: '''data.encode("utf-8")'''
-			case ExpressionType.INTEGER: '''struct.pack("i", data)'''
-			case ExpressionType.DOUBLE: '''struct.pack("f", data)'''
-			case ExpressionType.BOOLEAN: '''struct.pack("?", data)'''
-			case ExpressionType.STRING: '''data.encode("utf-8")'''
-			case ExpressionType.VOID:
-				throw new IllegalStateException("Encountered VOID type in grammar during code generation")
-			default:
-				throw new IllegalStateException("Encountered unknown type in grammar during code generation")
-		}
 	}
 
 	private def String compilePipelineComposition(Pipeline pipeline, String sink, GeneratorEnvironment env) {
@@ -194,8 +173,8 @@ class CompositionRootGenerator {
 
 	private def String compileBoardComposition(Board board, Device device, GeneratorEnvironment env) {
 		val parentArgs = '''«FOR parent : board.parents SEPARATOR ", "»«parent.compileBoardComposition(device, env)»«ENDFOR»'''
-		val driverArgs = '''«FOR sensor : board.sensors.filter(BaseSensorDefinition) SEPARATOR ", "»«IF device.usesSensor(sensor.name)»self.provide_driver_«sensor.name.asModule»«ELSE»None«ENDIF»«ENDFOR»'''
-		
+		val driverArgs = '''«FOR sensor : board.sensors.filter(BaseSensorDefinition) SEPARATOR ", "»«IF device.usesSensor(sensor.name)»self.provide_driver_«sensor.name.asModule»()«ELSE»None«ENDIF»«ENDFOR»'''
+
 		'''«env.useImport(device.board.name.asModule, board.name.asClass)»(«IF ! board.parents.isEmpty»«parentArgs», «ENDIF»«driverArgs»)'''
 	}
 
