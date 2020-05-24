@@ -3,6 +3,7 @@
  */
 package org.iot.devicefactory.scoping
 
+import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.naming.QualifiedName
@@ -16,6 +17,7 @@ import org.iot.devicefactory.deviceFactory.Data
 import org.iot.devicefactory.deviceFactory.Device
 import org.iot.devicefactory.deviceFactory.DeviceFactoryPackage.Literals
 import org.iot.devicefactory.deviceFactory.Fog
+import org.iot.devicefactory.deviceFactory.OverrideSensor
 import org.iot.devicefactory.deviceFactory.Sensor
 import org.iot.devicefactory.deviceFactory.Transformation
 
@@ -42,7 +44,7 @@ class DeviceFactoryScopeProvider extends AbstractDeviceFactoryScopeProvider {
 			case CommonPackage.Literals.REFERENCE__VARIABLE:
 				context.referenceVariableScope
 			case Literals.TRANSFORMATION__PROVIDER:
-				context.transformationDatas
+				context.transformationDataScope
 			default:
 				super.getScope(context, reference)
 		}
@@ -87,10 +89,10 @@ class DeviceFactoryScopeProvider extends AbstractDeviceFactoryScopeProvider {
 		}
 	}
 	
-	private def IScope getTransformationDatas(EObject context) {
-		var scope = context.eContainer.getContainerOfType(Cloud)?.getOutputDefinitionsFrom(Device, Fog)
+	private def IScope getTransformationDataScope(EObject context) {
+		var scope = context.getContainerOfType(Cloud)?.getOutputDefinitionsFrom(Device, Fog)
 		if (scope === null) {
-			scope = context.eContainer.getContainerOfType(Fog)?.getOutputDefinitionsFrom(Device)
+			scope = context.getContainerOfType(Fog)?.getOutputDefinitionsFrom(Device)
 			if (scope === null) {
 				return IScope.NULLSCOPE
 			}
@@ -99,9 +101,50 @@ class DeviceFactoryScopeProvider extends AbstractDeviceFactoryScopeProvider {
 		return Scopes.scopeFor(scope)
 	}
 	
-	def private Iterable<Data> getOutputDefinitionsFrom(EObject context, Class<? extends EObject>... types) {
+	private def Iterable<Data> getOutputDefinitionsFrom(EObject context, Class<? extends EObject>... types) {
 		types.flatMap [
 			context.getSiblingsOfType(it).allContents.filter(Data).toIterable
 		]
+	}
+	
+	def getScope(EObject context, EClass clazz) {
+		switch clazz {
+			case Literals.SENSOR:
+				context.sensorScope
+			case Literals.SENSOR_DATA:
+				context.dataScope
+		}
+	}
+	
+	private def IScope getSensorScope(EObject context) {
+		val device = context.getContainerOfType(Device)
+		if (device === null) {
+			IScope.NULLSCOPE
+		} else {
+			switch device {
+				ChildDevice: {
+					val localScope = device.sensors.filter[name !== null]
+					val outerScope = device.parent?.sensorScope ?: IScope.NULLSCOPE
+					Scopes.scopeFor(localScope, QualifiedName.wrapper[name], outerScope)
+				}
+				default: Scopes.scopeFor(device.sensors, QualifiedName.wrapper[name], IScope.NULLSCOPE)
+			}
+		}
+	}
+	
+	private def IScope getDataScope(EObject context) {
+		val sensor = context.getContainerOfType(Sensor)
+		if (sensor === null) {
+			IScope.NULLSCOPE
+		} else {
+			switch sensor {
+				OverrideSensor: {
+					val localScope = sensor.datas.filter[name !== null]
+					val outerScope = sensor.parent?.dataScope ?: IScope.NULLSCOPE
+					Scopes.scopeFor(localScope, outerScope)
+				}
+				default: Scopes.scopeFor(sensor.datas)
+			}
+		}
 	}
 }

@@ -7,9 +7,12 @@ import org.iot.devicefactory.deviceFactory.Device
 import org.iot.devicefactory.deviceFactory.Sensor
 import org.iot.devicefactory.deviceFactory.SensorData
 import org.iot.devicefactory.deviceFactory.SensorOut
+import org.iot.devicefactory.deviceLibrary.BaseSensorDefinition
+import org.iot.devicefactory.deviceLibrary.Board
 import org.iot.devicefactory.deviceLibrary.I2C
 import org.iot.devicefactory.deviceLibrary.Pin
 import org.iot.devicefactory.generator.python.GeneratorEnvironment
+import org.iot.devicefactory.generator.python.GeneratorUtils
 import org.iot.devicefactory.typing.ExpressionType
 import org.iot.devicefactory.typing.ExpressionTypeChecker
 import org.iot.devicefactory.typing.TupleExpressionType
@@ -22,6 +25,7 @@ import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
 class CompositionRootGenerator {
 
 	@Inject extension ExpressionTypeChecker
+	@Inject extension GeneratorUtils
 
 	def String compile(Device device, GeneratorEnvironment env) {
 		val classDef = device.compileClass(env)
@@ -47,6 +51,7 @@ class CompositionRootGenerator {
 				«sensorProviders»
 				«pipelineProviders»
 				«device.compileChannelProviders(env)»
+				«device.compileBoardProvider(env)»
 				«device.compileDriverProviders(env)»
 				«compileMakeChannel(env)»
 		'''
@@ -71,7 +76,7 @@ class CompositionRootGenerator {
 		'''
 			def «device.providerName»(self):
 				«device.name.asInstance» = self.provide_device()
-				«FOR sensor : device.sensors»
+				«FOR sensor : device.allSensors»
 					«device.name.asInstance».add_sensor("«sensor.name.asModule»", self.«sensor.providerName»())
 				«ENDFOR»
 				«IF device.input !== null»«device.name.asInstance».set_input_channel(self.«env.useChannel(device.input).providerName»())«ENDIF»
@@ -93,9 +98,9 @@ class CompositionRootGenerator {
 
 	private def String compileSensorProviders(Device device, GeneratorEnvironment env) {
 		'''
-			«FOR sensor : device.sensors»
+			«FOR sensor : device.allSensors»
 				def «sensor.providerName»(self):
-					«sensor.name.asInstance» = «env.useImport(sensor.name.asModule)».«sensor.name.asClass»(self.provide_driver_«sensor.name»())
+					«sensor.name.asInstance» = «env.useImport(sensor.name.asModule)».«sensor.name.asClass»(self.provide_board_«device.board.name.asModule»())
 					«FOR data : sensor.sensorDatas»
 						«FOR out : data.outputs»
 							«sensor.name.asInstance».add_pipeline("«data.name.asModule»", self.«out.providerName»())
@@ -109,7 +114,7 @@ class CompositionRootGenerator {
 
 	private def String compilePipelineProviders(Device device, GeneratorEnvironment env) {
 		'''
-			«FOR sensor : device.sensors»
+			«FOR sensor : device.allSensors»
 				«FOR data : sensor.sensorDatas»
 					«FOR out : data.outputs»
 						«out.compilePipelineProvider(env)»
@@ -140,7 +145,7 @@ class CompositionRootGenerator {
 
 	private def String compileDataConversion(Pipeline pipeline, GeneratorEnvironment env) {
 		env.useImport("struct")
-		
+
 		switch pipeline.outputTypeOfPipeline {
 			// TODO: How the hell do we send a tuple ?!
 			TupleExpressionType: '''data.encode("utf-8")'''
@@ -179,9 +184,24 @@ class CompositionRootGenerator {
 		'''
 	}
 
+	private def String compileBoardProvider(Device device, GeneratorEnvironment env) {
+		'''
+			def provide_board_«device.board.name.asModule»(self):
+				return «device.board.compileBoardComposition(device, env)»
+			
+		'''
+	}
+
+	private def String compileBoardComposition(Board board, Device device, GeneratorEnvironment env) {
+		val parentArgs = '''«FOR parent : board.parents SEPARATOR ", "»«parent.compileBoardComposition(device, env)»«ENDFOR»'''
+		val driverArgs = '''«FOR sensor : board.sensors.filter(BaseSensorDefinition) SEPARATOR ", "»«IF device.usesSensor(sensor.name)»self.provide_driver_«sensor.name.asModule»«ELSE»None«ENDIF»«ENDFOR»'''
+		
+		'''«env.useImport(device.board.name.asModule, board.name.asClass)»(«IF ! board.parents.isEmpty»«parentArgs», «ENDIF»«driverArgs»)'''
+	}
+
 	private def String compileDriverProviders(Device device, GeneratorEnvironment env) {
 		'''
-			«FOR sensor : device.sensors»
+			«FOR sensor : device.allSensors»
 				«sensor.input.compileDriverProvider(sensor.name, env)»
 				
 			«ENDFOR»
@@ -190,7 +210,8 @@ class CompositionRootGenerator {
 
 	private dispatch def String compileDriverProvider(Pin pin, String name, GeneratorEnvironment env) {
 		env.useImport("collections", "namedtuple")
-		
+		env.useLibFile("adc_driver.py")
+
 		'''
 			def provide_driver_«name»(self):
 				_Container = «pin.variables.compileNamedTuple»
@@ -209,6 +230,7 @@ class CompositionRootGenerator {
 	private def String compileMakeChannel(GeneratorEnvironment env) {
 		env.useImport("communication", "Serial")
 		env.useImport("communication", "Wifi")
+		env.useLibFile("communication.py")
 
 		'''
 			def make_channel(self, identifier: str):

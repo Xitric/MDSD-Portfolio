@@ -55,7 +55,7 @@ class DeviceFactoryGenerator extends AbstractGenerator {
 				"paritybits": "",
 				"stopbit": ""
 			}«FOR channel : channels»,
-			«channel.name»: {
+			"«channel.name»": {
 				"type": "",
 				"lane": ""
 			}«ENDFOR»

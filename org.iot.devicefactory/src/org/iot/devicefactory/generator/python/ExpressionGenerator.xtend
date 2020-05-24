@@ -115,7 +115,7 @@ class ExpressionGenerator {
 	}
 
 	def dispatch String compileExp(BooleanLiteral exp) {
-		'''«exp.value»'''
+		'''«exp.value.toString.toFirstUpper»'''
 	}
 
 	def dispatch String compileExp(StringLiteral exp) {

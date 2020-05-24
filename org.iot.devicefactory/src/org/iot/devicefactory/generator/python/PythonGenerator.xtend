@@ -18,6 +18,8 @@ import static extension org.iot.devicefactory.util.DeviceFactoryUtils.*
 
 class PythonGenerator implements LanguageGenerator {
 
+	@Inject extension GeneratorUtils
+
 	@Inject CompositionRootGenerator compositionRootGenerator
 	@Inject DeviceGenerator deviceGenerator
 	@Inject SensorGenerator sensorGenerator
@@ -49,7 +51,7 @@ class PythonGenerator implements LanguageGenerator {
 			deviceGenerator.compile(device, env)
 		)
 
-		for (Sensor sensor : device.sensors) {
+		for (Sensor sensor : device.allSensors) {
 			env = new GeneratorEnvironment(env.libFiles)
 			fsa.generateFile(
 				'''«basePath»/«sensor.name.asModule».py''',
