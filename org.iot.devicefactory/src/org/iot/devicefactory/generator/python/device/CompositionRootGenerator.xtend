@@ -134,7 +134,7 @@ class CompositionRootGenerator {
 			def «out.providerName»(self):
 				«env.useChannel(out.channel).name.asInstance» = self.«out.channel.providerName»()
 				return Pipeline(
-					«out.pipeline.compilePipelineComposition(sink, env)»
+					«out.pipeline?.compilePipelineComposition(sink, env) ?: sink»
 				)
 		'''
 	}

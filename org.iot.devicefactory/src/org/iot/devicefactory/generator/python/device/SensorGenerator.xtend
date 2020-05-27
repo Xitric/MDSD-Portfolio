@@ -105,7 +105,9 @@ class SensorGenerator {
 		'''
 			«FOR data : sensor.sensorDatas»
 				«FOR out : data.outputs»
-					«out.pipeline.compilePipeline(env)»
+					«IF out.pipeline !== null»
+						«out.pipeline.compilePipeline(env)»
+					«ENDIF»
 				«ENDFOR»
 			«ENDFOR»
 		'''

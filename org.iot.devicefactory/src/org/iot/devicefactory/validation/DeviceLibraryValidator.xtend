@@ -134,7 +134,7 @@ class DeviceLibraryValidator extends AbstractDeviceLibraryValidator {
 		if (sensorsByName.size === 1) {
 			error(
 				'''A preprocess step is required on overrides that do not resolve a conflict due to multiple inheritance''',
-				Literals.SENSOR_DEFINITION__PREPROCESS,//TODO: Consider parent feature
+				Literals.SENSOR_DEFINITION__PREPROCESS,
 				REQUIRED_PREPROCESS
 			)
 		}

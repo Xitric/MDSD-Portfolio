@@ -1,8 +1,10 @@
 package org.iot.devicefactory.generator.python.device
 
 import com.google.inject.Inject
+import java.util.ArrayList
 import java.util.HashSet
 import java.util.Set
+import org.eclipse.xtext.resource.IEObjectDescription
 import org.iot.devicefactory.common.Pipeline
 import org.iot.devicefactory.deviceFactory.Device
 import org.iot.devicefactory.deviceLibrary.BaseSensorDefinition
@@ -83,6 +85,12 @@ class BoardGenerator {
 		val passThroughSensors = qualifiedParentScope.filter [ parentSensor |
 			! board.sensors.exists[name == parentSensor.name.lastSegment]
 		]
+		val uniquePassthroughSensors = new ArrayList<IEObjectDescription>()
+		for (IEObjectDescription desc: passThroughSensors) {
+			if (uniquePassthroughSensors.findFirst[EObjectURI == desc.EObjectURI] === null) {
+				uniquePassthroughSensors.add(desc)
+			}
+		}
 
 		'''
 			«FOR sensor : board.sensors.filter[device.usesSensor(name)]»
@@ -98,7 +106,7 @@ class BoardGenerator {
 				
 			«ENDFOR»
 			
-			«FOR sensor : passThroughSensors»
+			«FOR sensor : uniquePassthroughSensors»
 				def sample_«sensor.name.lastSegment.asModule»(self):
 					return self.«sensor.name.firstSegment.asInstance».sample_«sensor.name.lastSegment.asModule»()
 				

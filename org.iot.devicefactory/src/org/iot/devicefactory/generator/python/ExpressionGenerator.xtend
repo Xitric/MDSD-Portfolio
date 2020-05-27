@@ -27,8 +27,6 @@ import org.iot.devicefactory.typing.ExpressionType
 import org.iot.devicefactory.typing.ExpressionTypeChecker
 
 class ExpressionGenerator {
-	
-	// TODO: Precedence calculation similar to that in OCaml to minimize on parentheses
 
 	@Inject extension ExpressionTypeChecker
 
