@@ -13,13 +13,13 @@ import org.iot.devicefactory.common.Negation
 import org.iot.devicefactory.common.NumberLiteral
 import org.iot.devicefactory.common.Pipeline
 import org.iot.devicefactory.common.Reference
+import org.iot.devicefactory.common.Rem
 import org.iot.devicefactory.common.StringLiteral
 import org.iot.devicefactory.common.Sub
 import org.iot.devicefactory.common.Tuple
 import org.iot.devicefactory.common.Window
 
 import static org.iot.devicefactory.typing.ExpressionType.*
-import org.iot.devicefactory.common.Rem
 
 class ExpressionTypeChecker {
 

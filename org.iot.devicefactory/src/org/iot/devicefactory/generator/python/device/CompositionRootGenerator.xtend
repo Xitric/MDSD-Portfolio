@@ -172,8 +172,10 @@ class CompositionRootGenerator {
 	}
 
 	private def String compileBoardComposition(Board board, Device device, GeneratorEnvironment env) {
+		val usedSensors = board.sensors.filter(BaseSensorDefinition).filter[device.usesSensor(it.name)]
+		
 		val parentArgs = '''«FOR parent : board.parents SEPARATOR ", "»«parent.compileBoardComposition(device, env)»«ENDFOR»'''
-		val driverArgs = '''«FOR sensor : board.sensors.filter(BaseSensorDefinition) SEPARATOR ", "»«IF device.usesSensor(sensor.name)»self.provide_driver_«sensor.name.asModule»()«ELSE»None«ENDIF»«ENDFOR»'''
+		val driverArgs = '''«FOR sensor : usedSensors SEPARATOR ", "»self.provide_driver_«sensor.name.asModule»()«ENDFOR»'''
 
 		'''«env.useImport(device.board.name.asModule, board.name.asClass)»(«IF ! board.parents.isEmpty»«parentArgs», «ENDIF»«driverArgs»)'''
 	}

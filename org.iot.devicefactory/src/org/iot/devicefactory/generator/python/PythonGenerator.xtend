@@ -62,7 +62,7 @@ class PythonGenerator implements LanguageGenerator {
 		env = new GeneratorEnvironment(env.libFiles)
 		fsa.generateFile(
 			'''«basePath»/«device.board.name.asModule».py''',
-			boardGenerator.compile(device.board, env)
+			boardGenerator.compile(device, env)
 		)
 
 		if (fsa.isFile('''«basePath»/main.py''')) {
