@@ -62,18 +62,22 @@ class ReferenceTypeProvider {
 	
 	private def getTransformationType(Variable variable, Transformation transformation, extension ExpressionTypeChecker typeChecker) {
 		val dataType = transformation.provider.typeOf(typeChecker)
+		val variableContainer = variable.eContainer
 		
-		if (variable.eContainer instanceof Variables) {
-			val index = (variable.eContainer as Variables).vars.indexOf(variable)
-			switch dataType {
-				TupleExpressionType case dataType.elements.size > index: dataType.elements.get(index)
-				default: VOID
+		switch variableContainer {
+			Variables: {
+				val index = variableContainer.vars.indexOf(variable)
+				switch dataType {
+					TupleExpressionType case dataType.elements.size > index: dataType.elements.get(index)
+					default: VOID
+				}
 			}
-		} else {
-			switch dataType {
-				TupleExpressionType: VOID
-				ExpressionType: dataType
-				default: VOID
+			default: {
+				switch dataType {
+					TupleExpressionType: VOID
+					ExpressionType: dataType
+					default: VOID
+				}
 			}
 		}
 	}
