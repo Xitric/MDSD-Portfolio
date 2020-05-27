@@ -17,6 +17,9 @@ SensorDefinition:
 	BaseSensorDefinition | OverrideSensorDefinition
 ;
 
+// The preprocess is stored in each sensor rule separately, because of an Xtext
+// bug:
+// https://bugs.eclipse.org/bugs/show_bug.cgi?id=485118
 BaseSensorDefinition:
 	'sensor' name=ID input=SensorInput (BEGIN
 		preprocess = Preprocess

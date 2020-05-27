@@ -36,7 +36,6 @@ NextPipeline returns Pipeline:
 //	'window' '[' width=INT ']' '.' execute=ExecutePipeline
 //;
 
-// TODO: Can maybe extract to externals
 ExecutePipeline:
     {Mean} 'mean' |
     {Median} 'median' |
@@ -84,7 +83,7 @@ MulDiv returns Expression:
 ;
 
 Negation returns Expression:
-    {Negation} '-' value=Exponent | Exponent
+    {Negation} '-' value=Negation | Exponent
 ;
 
 // Exponentiation is right-associative!

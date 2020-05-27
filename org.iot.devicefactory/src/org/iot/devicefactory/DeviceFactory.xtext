@@ -5,8 +5,6 @@ import "http://www.iot.org/devicefactory/DeviceLibrary" as Library
 generate deviceFactory "http://www.iot.org/devicefactory/DeviceFactory"
 
 Deployment:
-	// There should be at least one library - otherwise we cannot define any
-	// devices
 	libraries+=Library*
 	language=Language
 	
