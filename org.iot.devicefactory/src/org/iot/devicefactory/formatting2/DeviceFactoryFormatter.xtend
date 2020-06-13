@@ -70,7 +70,12 @@ class DeviceFactoryFormatter extends CommonFormatter {
 	}
 	
 	def void formatDevice(Device device, extension IFormattableDocument document) {
-		device.regionFor.keyword("device").prepend[noSpace].append[oneSpace]
+		if (device.isAbstract) {
+			device.regionFor.keyword("abstract").prepend[noSpace].append[oneSpace]
+			device.regionFor.keyword("device").surround[oneSpace]
+		} else {
+			device.regionFor.keyword("device").prepend[noSpace].append[oneSpace]
+		}
 		device.regionFor.feature(Literals.DEVICE__NAME).surround[oneSpace]
 		
 		device.interior[indent]
